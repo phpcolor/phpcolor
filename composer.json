@@ -1,8 +1,8 @@
 {
     "name": "phpcolor/phpcolor",
     "description": "PHP Color",
+    "keywords": ["php", "color"],
     "type": "library",
-    "tags": ["php", "color"],
     "license": "MIT",
     "authors": [
         {
