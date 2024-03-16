@@ -15,7 +15,7 @@
     ],
     "homepage": "https://phpcolor.dev",
     "support": {
-        "issues": "https://github.com/phpcolor/phpcolor/issues",
+        "issues": "https://github.com/phpcolor/phpcolor/issues"
     },
     "require": {
         "php": ">=8.2"
