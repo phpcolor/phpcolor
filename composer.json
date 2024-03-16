@@ -1,21 +1,29 @@
 {
     "name": "phpcolor/phpcolor",
     "description": "PHP Color",
-    "keywords": ["php", "color"],
-    "type": "library",
     "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "php",
+        "color"
+    ],
     "authors": [
         {
             "name": "Simon André",
             "email": "smn.andre@gmail.com"
         }
     ],
+    "homepage": "https://phpcolor.dev",
+    "support": {
+        "issues": "https://github.com/phpcolor/phpcolor/issues",
+    },
     "require": {
-        "php": ">=8.1"
+        "php": ">=8.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^11.0"
     },
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "PhpColor\\": "src/"
@@ -25,5 +33,12 @@
         "psr-4": {
             "PhpColor\\Tests\\": "tests/"
         }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.2.0"
+        },
+        "sort-packages": true
     }
 }
