@@ -1,0 +1,77 @@
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  cs:
+    name: Code style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP ${{ matrix.php-version }} setup
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: php-cs-fixer
+          coverage: none
+      - name: PHP CS Fixer
+        run: php-cs-fixer check --diff
+
+  sa:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP ${{ matrix.php-version }} setup
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: phpstan
+          coverage: none
+      - name: PHPStan
+        run: phpstan analyse
+
+  tests:
+    name: Tests (PHP ${{ matrix.php_version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version:
+          - '8.1'
+          # - '8.2'
+          # - '8.3'
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP ${{ matrix.php-version }} setup
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+
+      - name: Problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Composer validate
+        run: composer validate --strict
+
+      - name: Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - name: Composer cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-composer-
+      - name: Composer install
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: PHPUnit tests
+        run: ./vendor/bin/phpunit
