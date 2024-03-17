@@ -15,6 +15,7 @@
     ],
     "homepage": "https://phpcolor.dev",
     "support": {
+        "source": "https://github.com/phpcolor/phpcolor/",
         "issues": "https://github.com/phpcolor/phpcolor/issues"
     },
     "require": {
