@@ -9,7 +9,7 @@ on:
 
 jobs:
   cs:
-    name: Code style
+    name: "Code style"
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout"
@@ -38,7 +38,7 @@ jobs:
 #        run: phpstan analyse src/
 
   tests:
-    name: Tests (PHP ${{ matrix.php_version }})
+    name: "Tests (PHP ${{ matrix.php_version }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -72,5 +72,5 @@ jobs:
       - name: "Composer: install"
         run: composer install --prefer-dist --no-progress --no-suggest
 
-      - name: PHPUnit tests
+      - name: "PHPUnit tests"
         run: ./vendor/bin/phpunit
