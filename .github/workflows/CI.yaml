@@ -36,6 +36,7 @@ jobs:
         with:
           php-version: 8.3
           coverage: none
+          tools: phpstan
       - name: "Composer: cache config"
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
