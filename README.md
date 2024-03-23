@@ -7,11 +7,30 @@
 
 ## Installation
 
-Requirements: PHP 8.2 or higher 
+Requirements: PHP 8.3 or higher 
 
 ```bash
 composer require phpcolor/phpcolor
 ```
+
+## Features
+
+
+
+## Usage
+
+
+
+## Resources
+
+
+### References
+
+
+### Credits
+
+
+## Contributing
 
 
 ## License
