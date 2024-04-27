@@ -11,12 +11,16 @@
         {
             "name": "Simon André",
             "email": "smn.andre@gmail.com"
+        },
+        {
+            "name": "Raphaël Geffroy",
+            "email": "raphael@geffroy.dev"
         }
     ],
     "homepage": "https://phpcolor.dev",
     "support": {
-        "source": "https://github.com/phpcolor/phpcolor/",
-        "issues": "https://github.com/phpcolor/phpcolor/issues"
+        "issues": "https://github.com/phpcolor/phpcolor/issues",
+        "source": "https://github.com/phpcolor/phpcolor/"
     },
     "require": {
         "php": ">=8.3"
@@ -28,7 +32,10 @@
     "autoload": {
         "psr-4": {
             "PhpColor\\": "src/"
-        }
+        },
+        "exclude-from-classmap": [
+            "tests/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
