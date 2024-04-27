@@ -1,39 +1,14 @@
-# PHP Color 
-
----
-
-## Introduction
-
+<div align="center">
+<h1><img src="https://phpcolor.dev/phpcolor.svg" alt="PHPColor logo" height="50"></h1>
+<img src="colors.svg" alt="Colors" width="90%">
+</div>
 
 ## Installation
-
-Requirements: PHP 8.3 or higher 
 
 ```bash
 composer require phpcolor/phpcolor
 ```
 
-## Features
-
-
-
-## Usage
-
-
-
-## Resources
-
-
-### References
-
-
-### Credits
-
-
-## Contributing
-
-
 ## License
 
-See the [LICENSE](LICENSE) file for license rights and limitations.
-
+This [PHPColor](https://phpcolor.dev) library is released under the [MIT license](LICENSE).
