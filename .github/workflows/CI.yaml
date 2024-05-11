@@ -123,3 +123,7 @@ jobs:
         run: ./vendor/bin/phpunit --version
       - name: "PHPUnit: tests"
         run: ./vendor/bin/phpunit
+      - name: "Codecov: upload"
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
