@@ -3,5 +3,6 @@
 /.php-cs-fixer.cache
 /.php-cs-fixer.php
 /composer.lock
+/coverage.xml
 /phpstan.neon
 /phpunit.xml
