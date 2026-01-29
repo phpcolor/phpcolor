@@ -13,15 +13,19 @@ permissions:
 jobs:
 
   dep:
-    name: "Dependencies"
+    name: "Dependencies (PHP ${{ matrix.php-version }})"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [ '8.3', '8.4', '8.5' ]
+      fail-fast: false
     steps:
       - name: "Git: checkout"
         uses: actions/checkout@v4
-      - name: "PHP: setup 8.3 "
+      - name: "PHP: setup ${{ matrix.php-version }}"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: ${{ matrix.php-version }}
           coverage: none
           tools: composer
       - name: "Composer: cache config"
@@ -31,8 +35,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-${{ matrix.php-version }}-
+            ${{ runner.os }}-composer-
       - name: "Composer: validate"
         run: composer validate --strict
       - name: "Composer: install"
@@ -41,15 +47,19 @@ jobs:
         run: composer audit
 
   cs:
-    name: "Code style"
+    name: "Code style (PHP ${{ matrix.php-version }})"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [ '8.3' ]
+      fail-fast: false
     steps:
       - name: "Git: checkout"
         uses: actions/checkout@v4
-      - name: "PHP: setup 8.3"
+      - name: "PHP: setup ${{ matrix.php-version }}"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: ${{ matrix.php-version }}
           coverage: none
           tools: php-cs-fixer
       - name: "Php-CS-Fixer: version"
@@ -58,15 +68,19 @@ jobs:
         run: php-cs-fixer check --diff
 
   sa:
-    name: "Static Analysis"
+    name: "Static Analysis (PHP ${{ matrix.php-version }})"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [ '8.3' ]
+      fail-fast: false
     steps:
       - name: "Git: checkout"
         uses: actions/checkout@v4
       - name: "PHP: setup ${{ matrix.php-version }}"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: ${{ matrix.php-version }}
           coverage: none
           tools: phpstan
       - name: "Composer: cache config"
@@ -76,8 +90,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-${{ matrix.php-version }}-
+            ${{ runner.os }}-composer-
       - name: "Composer: validate"
         run: composer validate --strict
       - name: "Composer: install"
@@ -92,8 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version:
-          - '8.3'
+        php-version: [ '8.3', '8.4', '8.5' ]
       fail-fast: false
     steps:
       - name: "Git: Checkout"
@@ -114,8 +129,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-${{ matrix.php-version }}-
+            ${{ runner.os }}-composer-
       - name: "Composer: validate"
         run: composer validate --strict
       - name: "Composer: install"
@@ -125,6 +142,7 @@ jobs:
       - name: "PHPUnit: tests"
         run: ./vendor/bin/phpunit --coverage-text --coverage-clover coverage.xml
       - name: "Codecov: upload"
+        if: ${{ matrix.php-version == '8.5' }}
         uses: codecov/codecov-action@v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
