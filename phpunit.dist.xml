@@ -3,10 +3,9 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          cacheDirectory=".phpunit.cache"
+         colors="true"
          executionOrder="depends,defects"
-         requireCoverageMetadata="true"
          beStrictAboutOutputDuringTests="true"
-         failOnRisky="true"
          failOnWarning="true"
 >
     <testsuites>

@@ -1,0 +1,18 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+  <line x1="100" y1="150" x2="100" y2="50" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="90" y="50" text-anchor="end" font-family="sans-serif" font-size="12" fill="#64748b">L</text>
+  <!-- Chroma plane: static reference -->
+  <ellipse cx="250" cy="100" rx="80" ry="40" fill="none" stroke="#cbd5e1" stroke-width="2" />
+  <circle cx="250" cy="100" r="5" fill="#64748b" />
+  <!-- Hue vector arm: rotates around center -->
+  <g>
+    <line x1="250" y1="100" x2="310" y2="85" stroke="#3b82f6" stroke-width="3" />
+    <circle cx="310" cy="85" r="10" fill="#3b82f6" />
+    <animateTransform attributeName="transform" type="rotate"
+      from="0 250 100" to="360 250 100"
+      dur="10s"
+      repeatCount="indefinite"/>
+  </g>
+  <text x="250" y="160" text-anchor="middle" font-family="sans-serif" font-size="18" font-weight="bold" fill="#1e293b">Perceptual LCH</text>
+</svg>

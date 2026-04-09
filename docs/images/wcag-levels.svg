@@ -1,0 +1,61 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="contrastRamp" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#e2e8f0"/>
+      <stop offset="14%"  stop-color="#94a3b8"/>
+      <stop offset="21%"  stop-color="#64748b"/>
+      <stop offset="33%"  stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+
+  <!-- Contrast ramp strip -->
+  <rect x="60" y="75" width="680" height="30" rx="3" fill="url(#contrastRamp)"/>
+
+  <!-- Threshold lines -->
+  <!-- 3:1 large text AA  = 3/21 ≈ 14.3% → x = 60 + 0.143×680 = 157 -->
+  <line x1="157" y1="65" x2="157" y2="115" stroke="#64748b" stroke-width="1.5"/>
+  <text x="157" y="60" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#64748b">3:1</text>
+  <text x="157" y="130" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#64748b">Large AA</text>
+
+  <!-- 4.5:1 normal text AA = 4.5/21 ≈ 21.4% → x = 60 + 0.214×680 = 206 -->
+  <line x1="206" y1="65" x2="206" y2="115" stroke="#475569" stroke-width="1.5"/>
+  <text x="206" y="60" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#475569">4.5:1</text>
+  <text x="206" y="130" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#475569">AA</text>
+
+  <!-- 7:1 AAA = 7/21 ≈ 33.3% → x = 60 + 0.333×680 = 287 -->
+  <line x1="287" y1="65" x2="287" y2="115" stroke="#1e293b" stroke-width="1.5"/>
+  <text x="287" y="60" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#1e293b">7:1</text>
+  <text x="287" y="130" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="bold" fill="#1e293b">AAA</text>
+
+  <!-- Animated indicator sweeping the ramp -->
+  <circle cy="90" r="11" stroke="#fff" stroke-width="2">
+    <!-- Sweep from 1:1 (fail) through AA to AAA and back -->
+    <animate attributeName="cx"
+      values="60; 60; 740; 740; 60"
+      keyTimes="0; 0.05; 0.55; 0.6; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="9s" repeatCount="indefinite"/>
+    <animate attributeName="fill"
+      values="#e2e8f0; #e2e8f0; #0f172a; #0f172a; #e2e8f0"
+      keyTimes="0; 0.05; 0.55; 0.6; 1"
+      dur="9s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Pass/fail label that changes as indicator crosses thresholds -->
+  <!-- FAIL zone label -->
+  <text x="108" y="168" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ef4444">✕ Fail</text>
+  <!-- AA zone -->
+  <text x="247" y="168" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#f59e0b">AA</text>
+  <!-- AAA zone -->
+  <text x="514" y="168" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#22c55e">AAA</text>
+
+  <!-- Axis labels -->
+  <text x="60" y="168" font-family="sans-serif" font-size="10" fill="#94a3b8">1:1</text>
+  <text x="740" y="168" text-anchor="end" font-family="sans-serif" font-size="10" fill="#94a3b8">21:1</text>
+
+  <text x="400" y="36" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1e293b">WCAG Contrast Levels</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="chromaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#94a3b8" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+  <rect x="100" y="80" width="600" height="40" rx="4" fill="url(#chromaGradient)"/>
+  <circle cy="100" r="8" fill="#94a3b8" stroke="#fff" stroke-width="2">
+    <animate attributeName="cx"
+      values="100; 100; 700; 700; 100"
+      keyTimes="0; 0.05; 0.5; 0.55; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="6s"
+      repeatCount="indefinite"/>
+    <animate attributeName="fill"
+      values="#94a3b8; #94a3b8; #3b82f6; #3b82f6; #94a3b8"
+      keyTimes="0; 0.05; 0.5; 0.55; 1"
+      dur="6s"
+      repeatCount="indefinite"/>
+  </circle>
+  <text x="100" y="150" font-family="sans-serif" font-weight="bold" fill="#64748b" font-size="14">Achromatic (0.0)</text>
+  <text x="700" y="150" text-anchor="end" font-family="sans-serif" font-weight="bold" fill="#3b82f6" font-size="14">Vibrant</text>
+</svg>

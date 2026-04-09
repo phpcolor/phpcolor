@@ -1,0 +1,40 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lightnessGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+
+  <!-- Lightness strip -->
+  <rect x="100" y="80" width="600" height="40" rx="4" fill="url(#lightnessGrad)" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Sliding handle -->
+  <circle cy="100" r="14" stroke-width="2">
+    <!-- Position oscillates across the strip -->
+    <animate attributeName="cx"
+      values="114; 114; 686; 686; 114"
+      keyTimes="0; 0.06; 0.5; 0.56; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="7s" repeatCount="indefinite"/>
+    <!-- Handle fill mirrors the lightness value -->
+    <animate attributeName="fill"
+      values="#141414; #141414; #ebebeb; #ebebeb; #141414"
+      keyTimes="0; 0.06; 0.5; 0.56; 1"
+      dur="7s" repeatCount="indefinite"/>
+    <!-- Handle stroke inverts for visibility -->
+    <animate attributeName="stroke"
+      values="#555; #555; #aaa; #aaa; #555"
+      keyTimes="0; 0.06; 0.5; 0.56; 1"
+      dur="7s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Endpoint labels -->
+  <text x="100" y="150" font-family="sans-serif" font-weight="bold" fill="#64748b" font-size="14">0%</text>
+  <text x="700" y="150" text-anchor="end" font-family="sans-serif" font-weight="bold" fill="#64748b" font-size="14">100%</text>
+
+  <!-- Title -->
+  <text x="400" y="42" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#64748b">Lightness</text>
+</svg>

@@ -1,0 +1,81 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+
+  <!-- All gamut triangles, centered at (280, 175), opening upward -->
+  <!-- sRGB innermost: appears first -->
+  <path d="M 280 80 L 370 170 L 190 170 Z"
+    fill="#3b82f6" fill-opacity="0.25" stroke="#3b82f6" stroke-width="2" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 1; 1; 0; 0"
+      keyTimes="0; 0.083; 0.75; 0.833; 1"
+      dur="8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Display P3 -->
+  <path d="M 280 60 L 395 170 L 165 170 Z"
+    fill="#ef4444" fill-opacity="0.12" stroke="#ef4444" stroke-width="1.5" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.167; 0.25; 0.75; 0.833; 1"
+      dur="8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Adobe RGB (a98) -->
+  <path d="M 280 42 L 415 170 L 145 170 Z"
+    fill="#0891b2" fill-opacity="0.1" stroke="#0891b2" stroke-width="1.5" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.25; 0.333; 0.75; 0.833; 1"
+      dur="8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Rec.2020 -->
+  <path d="M 280 22 L 440 170 L 120 170 Z"
+    fill="#22c55e" fill-opacity="0.08" stroke="#22c55e" stroke-width="1.5" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.333; 0.417; 0.75; 0.833; 1"
+      dur="8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- ProPhoto (outermost) -->
+  <path d="M 280 6 L 468 170 L 92 170 Z"
+    fill="#9333ea" fill-opacity="0.05" stroke="#9333ea" stroke-width="1" stroke-dasharray="4 3" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.417; 0.5; 0.75; 0.833; 1"
+      dur="8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Baseline -->
+  <line x1="80" y1="170" x2="490" y2="170" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Legend: right side, cascade-revealed with matching timing -->
+  <g opacity="0">
+    <animate attributeName="opacity" values="0; 1; 1; 0; 0" keyTimes="0; 0.083; 0.75; 0.833; 1" dur="8s" repeatCount="indefinite"/>
+    <rect x="540" y="62" width="12" height="12" rx="2" fill="#3b82f6" fill-opacity="0.5"/>
+    <text x="560" y="73" font-family="sans-serif" font-size="12" fill="#3b82f6" font-weight="bold">sRGB</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.167; 0.25; 0.75; 0.833; 1" dur="8s" repeatCount="indefinite"/>
+    <rect x="540" y="82" width="12" height="12" rx="2" fill="#ef4444" fill-opacity="0.4"/>
+    <text x="560" y="93" font-family="sans-serif" font-size="12" fill="#ef4444">Display P3</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.25; 0.333; 0.75; 0.833; 1" dur="8s" repeatCount="indefinite"/>
+    <rect x="540" y="102" width="12" height="12" rx="2" fill="#0891b2" fill-opacity="0.4"/>
+    <text x="560" y="113" font-family="sans-serif" font-size="12" fill="#0891b2">Adobe RGB</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.333; 0.417; 0.75; 0.833; 1" dur="8s" repeatCount="indefinite"/>
+    <rect x="540" y="122" width="12" height="12" rx="2" fill="#22c55e" fill-opacity="0.4"/>
+    <text x="560" y="133" font-family="sans-serif" font-size="12" fill="#22c55e">Rec.2020</text>
+  </g>
+  <g opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.417; 0.5; 0.75; 0.833; 1" dur="8s" repeatCount="indefinite"/>
+    <rect x="540" y="142" width="12" height="12" rx="2" fill="#9333ea" fill-opacity="0.3"/>
+    <text x="560" y="153" font-family="sans-serif" font-size="12" fill="#9333ea">ProPhoto</text>
+  </g>
+
+  <text x="400" y="32" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1e293b">Color Space Gamuts</text>
+</svg>

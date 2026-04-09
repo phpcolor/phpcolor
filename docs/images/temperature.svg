@@ -1,0 +1,27 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tempGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="50%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#ef4444" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+  <rect x="100" y="80" width="600" height="40" rx="20" fill="url(#tempGradient)"/>
+  <circle cy="100" r="15" fill="#ef4444" stroke="#fff" stroke-width="3">
+    <animate attributeName="cx"
+      values="115; 115; 685; 685; 115"
+      keyTimes="0; 0.07; 0.5; 0.57; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="7s"
+      repeatCount="indefinite"/>
+    <animate attributeName="fill"
+      values="#3b82f6; #3b82f6; #ef4444; #ef4444; #3b82f6"
+      keyTimes="0; 0.07; 0.5; 0.57; 1"
+      dur="7s"
+      repeatCount="indefinite"/>
+  </circle>
+  <text x="100" y="150" font-family="sans-serif" font-weight="bold" fill="#3b82f6" font-size="14">Cool (-1.0)</text>
+  <text x="700" y="150" text-anchor="end" font-family="sans-serif" font-weight="bold" fill="#ef4444" font-size="14">Warm (+1.0)</text>
+</svg>

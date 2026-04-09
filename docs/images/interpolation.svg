@@ -1,0 +1,77 @@
+<svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- sRGB interpolation: red→blue goes through dull grey-purple midpoint -->
+    <linearGradient id="srgbInterp" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="50%" stop-color="#7f3f7f"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <!-- Oklch interpolation: red→blue stays vivid, swings through orange/yellow/green/cyan -->
+    <linearGradient id="oklchInterp" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#ef4444"/>
+      <stop offset="20%"  stop-color="#f97316"/>
+      <stop offset="40%"  stop-color="#eab308"/>
+      <stop offset="60%"  stop-color="#22c55e"/>
+      <stop offset="80%"  stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="260" rx="12" fill="#f8fafc"/>
+
+  <!-- Row labels -->
+  <text x="50" y="94" font-family="sans-serif" font-size="12" font-weight="bold" fill="#94a3b8">sRGB</text>
+  <text x="50" y="174" font-family="sans-serif" font-size="12" font-weight="bold" fill="#64748b">Oklch</text>
+
+  <!-- sRGB strip -->
+  <rect x="130" y="72" width="580" height="36" rx="4" fill="url(#srgbInterp)"/>
+
+  <!-- Oklch strip -->
+  <rect x="130" y="152" width="580" height="36" rx="4" fill="url(#oklchInterp)"/>
+
+  <!-- Midpoint marker: sRGB (dull) -->
+  <line x1="420" y1="64" x2="420" y2="116" stroke="#94a3b8" stroke-width="1" stroke-dasharray="3 2"/>
+  <circle cx="420" cy="90" r="7" fill="#7f3f7f" stroke="#fff" stroke-width="1.5"/>
+
+  <!-- Midpoint marker: Oklch (vivid) -->
+  <line x1="420" y1="144" x2="420" y2="196" stroke="#64748b" stroke-width="1" stroke-dasharray="3 2"/>
+  <circle cx="420" cy="170" r="7" fill="#22c55e" stroke="#fff" stroke-width="1.5"/>
+
+  <!-- Animated dot sweeping across sRGB strip -->
+  <circle cy="90" r="9" fill="#7f3f7f" stroke="#fff" stroke-width="2">
+    <animate attributeName="cx"
+      values="130; 130; 710; 710; 130"
+      keyTimes="0; 0.06; 0.5; 0.56; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="8s" repeatCount="indefinite"/>
+    <!-- Dot color follows sRGB interpolation (red→dull-purple→blue) -->
+    <animate attributeName="fill"
+      values="#ef4444; #ef4444; #7f3f7f; #7f3f7f; #3b82f6; #3b82f6; #7f3f7f; #7f3f7f; #ef4444"
+      keyTimes="0; 0.06; 0.28; 0.34; 0.5; 0.56; 0.72; 0.78; 1"
+      calcMode="linear"
+      dur="8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Animated dot sweeping across Oklch strip -->
+  <circle cy="170" r="9" fill="#22c55e" stroke="#fff" stroke-width="2">
+    <animate attributeName="cx"
+      values="130; 130; 710; 710; 130"
+      keyTimes="0; 0.06; 0.5; 0.56; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="8s" repeatCount="indefinite"/>
+    <!-- Dot color follows Oklch arc (red→orange→yellow→green→cyan→blue) -->
+    <animate attributeName="fill"
+      values="#ef4444; #ef4444; #f97316; #eab308; #22c55e; #06b6d4; #3b82f6; #3b82f6; #06b6d4; #22c55e; #eab308; #f97316; #ef4444"
+      keyTimes="0; 0.06; 0.17; 0.28; 0.39; 0.44; 0.5; 0.56; 0.62; 0.72; 0.83; 0.94; 1"
+      calcMode="linear"
+      dur="8s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Title -->
+  <text x="400" y="32" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#1e293b">Color interpolation path</text>
+
+  <!-- Footnote -->
+  <text x="420" y="232" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#94a3b8">same endpoints — different paths through color space</text>
+</svg>

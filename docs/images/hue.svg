@@ -1,0 +1,25 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hueStrip" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff0000" />
+      <stop offset="16.6%" stop-color="#ffff00" />
+      <stop offset="33.3%" stop-color="#00ff00" />
+      <stop offset="50%" stop-color="#00ffff" />
+      <stop offset="66.6%" stop-color="#0000ff" />
+      <stop offset="83.3%" stop-color="#ff00ff" />
+      <stop offset="100%" stop-color="#ff0000" />
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+  <rect x="50" y="80" width="700" height="40" rx="4" fill="url(#hueStrip)"/>
+  <rect x="200" y="70" width="4" height="60" fill="#000" rx="2">
+    <animate attributeName="x"
+      values="50; 746; 50"
+      keyTimes="0; 0.5; 1"
+      calcMode="spline"
+      keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"
+      dur="8s"
+      repeatCount="indefinite"/>
+  </rect>
+  <text x="200" y="155" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="#64748b" font-size="14">90°</text>
+</svg>
