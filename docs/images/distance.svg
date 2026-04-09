@@ -1,0 +1,31 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+  <circle cy="100" r="50" fill="#3b82f6">
+    <animate attributeName="cx"
+      values="400; 400; 200; 200; 400"
+      keyTimes="0; 0.1; 0.5; 0.7; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="6s"
+      repeatCount="indefinite"/>
+  </circle>
+  <circle cy="100" r="50" fill="#2563eb">
+    <animate attributeName="cx"
+      values="400; 400; 600; 600; 400"
+      keyTimes="0; 0.1; 0.5; 0.7; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="6s"
+      repeatCount="indefinite"/>
+  </circle>
+  <path stroke="#64748b" stroke-width="2" stroke-dasharray="8 4" fill="none">
+    <animate attributeName="d"
+      values="M 400 100 L 400 100; M 400 100 L 400 100; M 250 100 L 550 100; M 250 100 L 550 100; M 400 100 L 400 100"
+      keyTimes="0; 0.1; 0.5; 0.7; 1"
+      calcMode="spline"
+      keySplines="0 0 1 1; 0.45 0 0.55 1; 0 0 1 1; 0.45 0 0.55 1"
+      dur="6s"
+      repeatCount="indefinite"/>
+  </path>
+  <text x="400" y="90" text-anchor="middle" font-family="sans-serif" font-weight="bold" fill="#64748b" font-size="16">ΔE (Delta E)</text>
+</svg>

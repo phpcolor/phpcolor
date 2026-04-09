@@ -22,31 +22,48 @@
         "issues": "https://github.com/phpcolor/phpcolor/issues",
         "source": "https://github.com/phpcolor/phpcolor/"
     },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/smnandre"
+        }
+    ],
     "require": {
         "php": ">=8.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "^11.0"
+        "phpunit/phpunit": "^12.5",
+        "phpstan/phpstan": "^2.1"
     },
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "PhpColor\\": "src/"
+            "PhpColor\\Color\\": "src/"
         },
+        "files": [
+            "src/Support/functions.php"
+        ],
         "exclude-from-classmap": [
             "tests/"
         ]
     },
     "autoload-dev": {
         "psr-4": {
-            "PhpColor\\Tests\\": "tests/"
+            "PhpColor\\Color\\Tests\\": "tests/"
         }
     },
     "config": {
         "optimize-autoloader": true,
-        "platform": {
-            "php": "8.3.0"
-        },
         "sort-packages": true
+    },
+    "scripts": {
+        "cs": "php-cs-fixer fix",
+        "qa": [
+            "@cs",
+            "@sa",
+            "@test"
+        ],
+        "sa": "phpstan analyse --memory-limit=1G",
+        "test": "phpunit"
     }
 }

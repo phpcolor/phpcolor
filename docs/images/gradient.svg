@@ -1,0 +1,17 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#22c55e">
+        <animate attributeName="stop-color"
+          values="#22c55e; #8b5cf6; #ef4444; #f59e0b; #22c55e"
+          keyTimes="0; 0.25; 0.5; 0.75; 1"
+          calcMode="linear"
+          dur="10s"
+          repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+  <rect x="50" y="50" width="700" height="100" rx="8" fill="url(#heroGradient)"/>
+</svg>

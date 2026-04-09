@@ -1,0 +1,73 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+
+  <!-- Base color swatch -->
+  <rect x="50" y="60" width="80" height="80" rx="8" fill="#3b82f6"/>
+  <text x="90" y="158" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">base</text>
+
+  <!-- Connector line from base -->
+  <line x1="130" y1="100" x2="175" y2="100" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+  <!-- Derived variants: cascade reveal, each connected by dashes -->
+  <!-- 1: lighter -->
+  <rect x="185" y="70" width="60" height="60" rx="6" fill="#93c5fd" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.1; 0.2; 0.75; 0.85; 1"
+      dur="7s" repeatCount="indefinite"/>
+  </rect>
+  <text x="215" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.1; 0.2; 0.75; 0.85; 1" dur="7s" repeatCount="indefinite"/>
+    lighter
+  </text>
+  <line x1="245" y1="100" x2="275" y2="100" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 2" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.1; 0.2; 0.75; 0.85; 1" dur="7s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- 2: more chroma -->
+  <rect x="280" y="70" width="60" height="60" rx="6" fill="#1d4ed8" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.2; 0.3; 0.75; 0.85; 1"
+      dur="7s" repeatCount="indefinite"/>
+  </rect>
+  <text x="310" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.2; 0.3; 0.75; 0.85; 1" dur="7s" repeatCount="indefinite"/>
+    darker
+  </text>
+  <line x1="340" y1="100" x2="370" y2="100" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 2" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.2; 0.3; 0.75; 0.85; 1" dur="7s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- 3: hue-rotated +60° → cyan -->
+  <rect x="375" y="70" width="60" height="60" rx="6" fill="#06b6d4" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.3; 0.4; 0.75; 0.85; 1"
+      dur="7s" repeatCount="indefinite"/>
+  </rect>
+  <text x="405" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.3; 0.4; 0.75; 0.85; 1" dur="7s" repeatCount="indefinite"/>
+    hue +60°
+  </text>
+  <line x1="435" y1="100" x2="465" y2="100" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 2" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.3; 0.4; 0.75; 0.85; 1" dur="7s" repeatCount="indefinite"/>
+  </line>
+
+  <!-- 4: desaturated -->
+  <rect x="470" y="70" width="60" height="60" rx="6" fill="#94a3b8" opacity="0">
+    <animate attributeName="opacity"
+      values="0; 0; 1; 1; 0; 0"
+      keyTimes="0; 0.4; 0.5; 0.75; 0.85; 1"
+      dur="7s" repeatCount="indefinite"/>
+  </rect>
+  <text x="500" y="148" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 1; 1; 0; 0" keyTimes="0; 0.4; 0.5; 0.75; 0.85; 1" dur="7s" repeatCount="indefinite"/>
+    achromatic
+  </text>
+
+  <!-- CSS expression hint -->
+  <text x="620" y="88" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1e293b">Relative Colors</text>
+  <text x="620" y="108" text-anchor="middle" font-family="monospace" font-size="11" fill="#64748b">oklch(from base</text>
+  <text x="620" y="124" text-anchor="middle" font-family="monospace" font-size="11" fill="#64748b">calc(l + 0.1) c h)</text>
+</svg>

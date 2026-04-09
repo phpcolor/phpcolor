@@ -1,0 +1,25 @@
+<svg viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="200" rx="12" fill="#f8fafc"/>
+
+  <!-- Normal: always red -->
+  <circle cx="150" cy="100" r="60" fill="#ef4444"/>
+  <text x="150" y="180" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#64748b">Normal</text>
+
+  <!-- Protanopia: transitions from normal red → olive after a delay -->
+  <circle cx="400" cy="100" r="60" fill="#ef4444">
+    <animate attributeName="fill"
+      values="#ef4444; #ef4444; #8b7800; #8b7800; #ef4444; #ef4444"
+      keyTimes="0; 0.133; 0.3; 0.75; 0.867; 1"
+      dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <text x="400" y="180" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#64748b">Protanopia</text>
+
+  <!-- Monochromacy: transitions from normal red → gray after a further delay -->
+  <circle cx="650" cy="100" r="60" fill="#ef4444">
+    <animate attributeName="fill"
+      values="#ef4444; #ef4444; #767676; #767676; #ef4444; #ef4444"
+      keyTimes="0; 0.3; 0.467; 0.75; 0.867; 1"
+      dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <text x="650" y="180" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="bold" fill="#64748b">Monochromacy</text>
+</svg>
