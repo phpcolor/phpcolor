@@ -629,6 +629,12 @@ abstract readonly class AbstractColor implements \Stringable, ColorInterface
         return sqrt($x);
     }
 
+    /**
+     * Return the CSS representation of the color.
+     *
+     * Alias for toString(), invoked implicitly when the color is used in a
+     * string context.
+     */
     final public function __toString(): string
     {
         return $this->toString();

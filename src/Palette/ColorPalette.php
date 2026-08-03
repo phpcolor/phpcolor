@@ -55,6 +55,11 @@ final readonly class ColorPalette implements ColorPaletteInterface
         return new self($colors, !array_is_list($hexColors));
     }
 
+    /**
+     * Create a palette by interpolating between two colors.
+     *
+     * @param string $space The color space used for interpolation (e.g. "oklab", "oklch", "srgb")
+     */
     public static function interpolate(ColorInterface $start, ColorInterface $end, int $steps = 10, string $space = 'oklab'): self
     {
         if (2 > $steps) {
@@ -69,6 +74,9 @@ final readonly class ColorPalette implements ColorPaletteInterface
         return new self($colors, false);
     }
 
+    /**
+     * Create a palette of evenly spaced OKLCH lightness steps from one color.
+     */
     public static function lightnessScale(ColorInterface $color, int $steps = 10, float $min = 0.05, float $max = 0.95): self
     {
         if (1 > $steps) {
@@ -125,6 +133,9 @@ final readonly class ColorPalette implements ColorPaletteInterface
         return new self($colors, false);
     }
 
+    /**
+     * Create a palette of shades toward black from one color.
+     */
     public static function shades(ColorInterface $color, int $steps = 5): self
     {
         if (1 > $steps) {
@@ -139,6 +150,9 @@ final readonly class ColorPalette implements ColorPaletteInterface
         return new self($colors, false);
     }
 
+    /**
+     * Create a palette of tints toward white from one color.
+     */
     public static function tints(ColorInterface $color, int $steps = 5): self
     {
         if (1 > $steps) {
@@ -153,6 +167,9 @@ final readonly class ColorPalette implements ColorPaletteInterface
         return new self($colors, false);
     }
 
+    /**
+     * Create a palette builder, optionally starting from a base color.
+     */
     public static function builder(ColorInterface|string|null $base = null): ColorPaletteBuilder
     {
         return new ColorPaletteBuilder($base);

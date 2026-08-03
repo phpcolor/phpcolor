@@ -25,6 +25,9 @@ use PhpColor\Color\Palette\Harmony\HarmonyPattern;
  */
 final readonly class HarmonyFixer implements PaletteFixerInterface
 {
+    /**
+     * Create a harmony fixer, optionally with a custom harmony detector.
+     */
     public function __construct(
         private HarmonyDetector $detector = new HarmonyDetector(),
     ) {

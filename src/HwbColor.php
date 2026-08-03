@@ -42,6 +42,13 @@ final readonly class HwbColor extends AbstractColor
         $this->alpha = self::clamp01($alpha);
     }
 
+    /**
+     * Create color from channel values.
+     *
+     * @param array<string, float> $channels
+     *
+     * @throws InvalidColorException If the "h", "w", or "b" channel is missing
+     */
     public static function fromChannels(array $channels, float $alpha = 1.0): static
     {
         if (!isset($channels['h']) || !isset($channels['w']) || !isset($channels['b'])) {

@@ -21,6 +21,9 @@ namespace PhpColor\Color\Colorimetry;
  */
 final readonly class WhitePoint
 {
+    /**
+     * Create a white point from its X, Y, and Z tristimulus values.
+     */
     public function __construct(
         public float $X,
         public float $Y,
