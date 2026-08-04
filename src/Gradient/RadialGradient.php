@@ -102,6 +102,8 @@ final readonly class RadialGradient extends AbstractGradient
 
     public function toCss(?string $colorSpace = null): string
     {
+        $this->assertMinimumStops();
+
         $stopsStr = $this->formatStops($colorSpace);
 
         $params = [];
@@ -118,13 +120,9 @@ final readonly class RadialGradient extends AbstractGradient
             $params[] = 'at '.$this->position;
         }
 
-        $paramsStr = implode(' ', $params);
+        $params[] = $this->formatInterpolationSpace();
 
-        if ('' === $paramsStr) {
-            return \sprintf('radial-gradient(%s)', $stopsStr);
-        }
-
-        return \sprintf('radial-gradient(%s%s%s)', $paramsStr, 0 === \count($this->stops) ? '' : ', ', $stopsStr);
+        return \sprintf('radial-gradient(%s, %s)', implode(' ', $params), $stopsStr);
     }
 
     /**

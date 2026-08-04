@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace PhpColor\Color\Gradient;
 
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Exception\InvalidColorException;
+use PhpColor\Color\OklchColor;
 
 /**
  * Conic gradient implementation.
@@ -23,6 +25,16 @@ use PhpColor\Color\ColorInterface;
  */
 final readonly class ConicGradient extends AbstractGradient
 {
+    /**
+     * Chroma of the color wheel hues.
+     */
+    private const float WHEEL_CHROMA = 0.15;
+
+    /**
+     * Lightness of the color wheel hues.
+     */
+    private const float WHEEL_LIGHTNESS = 0.7;
+
     /**
      * Create a new conic gradient instance.
      *
@@ -41,11 +53,29 @@ final readonly class ConicGradient extends AbstractGradient
     }
 
     /**
-     * Create a default color wheel conic gradient.
+     * Create a color wheel conic gradient of evenly spaced OKLCH hues.
+     *
+     * The wheel is closed by repeating the first hue at position 1.0.
+     *
+     * @param int $steps Number of hues around the wheel (at least 2)
+     *
+     * @throws InvalidColorException if fewer than 2 steps are requested
      */
-    public static function colorWheel(): self
+    public static function colorWheel(int $steps = 12): self
     {
-        return new self();
+        if ($steps < 2) {
+            throw new InvalidColorException(\sprintf('A color wheel requires at least 2 steps, %d given.', $steps));
+        }
+
+        $stops = [];
+
+        for ($i = 0; $i < $steps; ++$i) {
+            $stops[] = new GradientStop(new OklchColor(self::WHEEL_LIGHTNESS, self::WHEEL_CHROMA, $i * (360.0 / $steps)), $i / $steps);
+        }
+
+        $stops[] = new GradientStop(new OklchColor(self::WHEEL_LIGHTNESS, self::WHEEL_CHROMA, 0.0), 1.0);
+
+        return new self(stops: $stops);
     }
 
     public function addStop(ColorInterface $color, float $position): static
@@ -79,6 +109,8 @@ final readonly class ConicGradient extends AbstractGradient
 
     public function toCss(?string $colorSpace = null): string
     {
+        $this->assertMinimumStops();
+
         $stopsStr = $this->formatStops($colorSpace);
 
         $params = [];
@@ -91,15 +123,9 @@ final readonly class ConicGradient extends AbstractGradient
             $params[] = 'at '.$this->position;
         }
 
-        $paramsStr = implode(' ', $params);
+        $params[] = $this->formatInterpolationSpace();
 
-        if ([] === $this->stops) {
-            return '' === $paramsStr || '0' === $paramsStr ? 'conic-gradient()' : \sprintf('conic-gradient(%s)', $paramsStr);
-        }
-
-        return '' === $paramsStr || '0' === $paramsStr
-            ? \sprintf('conic-gradient(%s)', $stopsStr)
-            : \sprintf('conic-gradient(%s, %s)', $paramsStr, $stopsStr);
+        return \sprintf('conic-gradient(%s, %s)', implode(' ', $params), $stopsStr);
     }
 
     /**

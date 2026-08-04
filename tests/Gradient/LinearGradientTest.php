@@ -15,6 +15,9 @@ namespace PhpColor\Color\Tests\Gradient;
 
 use PhpColor\Color\Color;
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Exception\InvalidColorException;
+use PhpColor\Color\Gradient\GradientStop;
+use PhpColor\Color\Gradient\InterpolationSpace;
 use PhpColor\Color\Gradient\LinearGradient;
 use PhpColor\Color\SrgbColor;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -140,13 +143,43 @@ final class LinearGradientTest extends TestCase
         $this->assertEqualsWithDelta(1.0, $rgb->r, 0.01);
     }
 
-    public function testToCssEmpty(): void
+    public function testToCssWithSrgbInterpolationSpace(): void
+    {
+        $gradient = new LinearGradient(90.0, [
+            new GradientStop(Color::parse('#ff0000'), 0.0),
+            new GradientStop(Color::parse('#0000ff'), 1.0),
+        ], InterpolationSpace::Srgb);
+
+        $this->assertSame('linear-gradient(90deg in srgb-linear, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
+    }
+
+    public function testToCssThrowsWithoutStops(): void
     {
         $gradient = new LinearGradient(90.0);
-        $css = $gradient->toCss();
 
-        $this->assertStringStartsWith('linear-gradient(', $css);
-        $this->assertStringContainsString('90deg', $css);
+        $this->expectException(InvalidColorException::class);
+        $this->expectExceptionMessage('A linear gradient requires at least 2 color stops, 0 given.');
+
+        $gradient->toCss();
+    }
+
+    public function testToCssThrowsWithSingleStop(): void
+    {
+        $gradient = (new LinearGradient())->addStop(Color::parse('#ff0000'), 0.0);
+
+        $this->expectException(InvalidColorException::class);
+        $this->expectExceptionMessage('A linear gradient requires at least 2 color stops, 1 given.');
+
+        $gradient->toCss();
+    }
+
+    public function testToCssWithOklabInterpolationSpace(): void
+    {
+        $gradient = (new LinearGradient())
+            ->addStop(Color::parse('#ff0000'), 0.0)
+            ->addStop(Color::parse('#0000ff'), 1.0);
+
+        $this->assertSame('linear-gradient(180deg in oklab, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
     }
 
     public function testToCssWithStops(): void

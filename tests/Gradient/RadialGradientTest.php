@@ -15,6 +15,9 @@ namespace PhpColor\Color\Tests\Gradient;
 
 use PhpColor\Color\Color;
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Exception\InvalidColorException;
+use PhpColor\Color\Gradient\GradientStop;
+use PhpColor\Color\Gradient\InterpolationSpace;
 use PhpColor\Color\Gradient\RadialGradient;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -94,11 +97,51 @@ final class RadialGradientTest extends TestCase
         $this->assertStringContainsString('circle', $css);
     }
 
+    public function testToCssWithSrgbInterpolationSpace(): void
+    {
+        $gradient = new RadialGradient('ellipse', 'farthest-corner', 'center', [
+            new GradientStop(Color::parse('#ff0000'), 0.0),
+            new GradientStop(Color::parse('#0000ff'), 1.0),
+        ], InterpolationSpace::Srgb);
+
+        $this->assertSame('radial-gradient(in srgb-linear, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
+    }
+
+    public function testToCssThrowsWithoutStops(): void
+    {
+        $gradient = new RadialGradient();
+
+        $this->expectException(InvalidColorException::class);
+        $this->expectExceptionMessage('A radial gradient requires at least 2 color stops, 0 given.');
+
+        $gradient->toCss();
+    }
+
+    public function testToCssThrowsWithSingleStop(): void
+    {
+        $gradient = (new RadialGradient())->addStop(Color::parse('#ff0000'), 0.0);
+
+        $this->expectException(InvalidColorException::class);
+        $this->expectExceptionMessage('A radial gradient requires at least 2 color stops, 1 given.');
+
+        $gradient->toCss();
+    }
+
+    public function testToCssWithOklabInterpolationSpace(): void
+    {
+        $gradient = RadialGradient::circle()
+            ->addStop(Color::parse('#ff0000'), 0.0)
+            ->addStop(Color::parse('#0000ff'), 1.0);
+
+        $this->assertSame('radial-gradient(circle in oklab, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
+    }
+
     public function testToCssWithPosition(): void
     {
         $gradient = new RadialGradient();
         $gradient = $gradient->withPosition('top left')
-            ->addStop(Color::parse('#ff0000'), 0.0);
+            ->addStop(Color::parse('#ff0000'), 0.0)
+            ->addStop(Color::parse('#0000ff'), 1.0);
 
         $css = $gradient->toCss();
 
@@ -109,7 +152,8 @@ final class RadialGradientTest extends TestCase
     {
         $gradient = new RadialGradient();
         $gradient = $gradient->withSize('closest-side')
-            ->addStop(Color::parse('#ff0000'), 0.0);
+            ->addStop(Color::parse('#ff0000'), 0.0)
+            ->addStop(Color::parse('#0000ff'), 1.0);
 
         $css = $gradient->toCss();
 

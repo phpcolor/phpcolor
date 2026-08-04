@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhpColor\Color\Tests\Gradient;
 
 use PhpColor\Color\Color;
+use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\Gradient\ConicGradient;
 use PhpColor\Color\Gradient\Gradient;
 use PhpColor\Color\Gradient\GradientBuilder;
@@ -28,6 +29,51 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Gradient::class)]
 final class GradientBuilderTest extends TestCase
 {
+    public function testBuiltGradientEmitsInterpolationSpace(): void
+    {
+        $css = GradientBuilder::linear(90.0)
+            ->from('#ff0000')
+            ->to('#0000ff')
+            ->build()
+            ->toCss();
+
+        $this->assertSame('linear-gradient(90deg in oklab, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $css);
+    }
+
+    public function testBuiltGradientEmitsSrgbInterpolationSpaceAsLinear(): void
+    {
+        $css = GradientBuilder::linear(90.0)
+            ->from('#ff0000')
+            ->to('#0000ff')
+            ->in('srgb')
+            ->build()
+            ->toCss();
+
+        $this->assertSame('linear-gradient(90deg in srgb-linear, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $css);
+    }
+
+    public function testEmptyBuiltGradientBuildsButFailsToRender(): void
+    {
+        $gradient = GradientBuilder::linear()->build();
+
+        $this->assertSame([], $gradient->getStops());
+
+        $this->expectException(InvalidColorException::class);
+        $this->expectExceptionMessage('A linear gradient requires at least 2 color stops, 0 given.');
+
+        $gradient->toCss();
+    }
+
+    public function testSingleStopBuiltGradientFailsToRender(): void
+    {
+        $gradient = GradientBuilder::radial()->from('#ff0000')->build();
+
+        $this->expectException(InvalidColorException::class);
+        $this->expectExceptionMessage('A radial gradient requires at least 2 color stops, 1 given.');
+
+        $gradient->toCss();
+    }
+
     public function testBuilderInterpolationSpace(): void
     {
         $gradient = GradientBuilder::linear()
