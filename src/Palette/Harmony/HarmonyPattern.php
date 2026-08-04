@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace PhpColor\Color\Palette\Harmony;
 
+/**
+ * Color wheel harmony patterns, defined by hue offsets from a base color.
+ */
 enum HarmonyPattern: string
 {
     /** Hues adjacent to the base, ±30°. */
