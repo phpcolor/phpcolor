@@ -166,4 +166,54 @@ final class ContrastSolverTest extends TestCase
         $this->assertLessThan(10.0, ColorContrast::calculate($adj, $bg)); // Assert that target was NOT met
         $this->assertEqualsWithDelta($fg->getHue(), $adj->getHue(), 1.0); // Hue should be preserved
     }
+
+    public function testAdjustLightnessToContrastSurvivesHexRoundTrip(): void
+    {
+        // Regression: the full-precision object used to reach
+        // 4.50001473216499637 while its serialized #458cff reparsed to
+        // 4.49190475486645280, below target.
+        $fg = Color::parse('#3b82f6');
+        $bg = Color::parse('#1e293b');
+
+        $adjusted = ContrastSolver::adjustLightnessToContrast($fg, $bg, 4.5);
+        $reparsed = Color::parse($adjusted->toHex());
+
+        $this->assertGreaterThanOrEqual(4.5, ColorContrast::calculate($reparsed, $bg));
+    }
+
+    public function testRequiredAlphaSurvivesHexRoundTrip(): void
+    {
+        // Regression vector found while auditing this bug: alpha 0.7584023476
+        // reaches 4.50000038 at full precision but rounds to 0.756863
+        // (4.4873307076) at the nearest 8-bit alpha byte.
+        $fg = Color::parse('#f59e0b');
+        $bg = Color::parse('#1e293b');
+
+        $alpha = ContrastSolver::requiredAlpha($fg, $bg, 4.5);
+        $quantizedAlpha = round($alpha * 255.0) / 255.0;
+
+        $ratio = ContrastSolver::compositedRatio($fg->withAlpha($quantizedAlpha), $bg);
+        $this->assertGreaterThanOrEqual(4.5, $ratio);
+    }
+
+    public function testAdjustLightnessToContrastCanTargetFullPrecision(): void
+    {
+        // Precision 0 disables quantization, preserving the previous behavior.
+        $fg = Color::parse('#3b82f6');
+        $bg = Color::parse('#1e293b');
+
+        $adjusted = ContrastSolver::adjustLightnessToContrast($fg, $bg, 4.5, 0);
+
+        $this->assertGreaterThanOrEqual(4.5, ColorContrast::calculate($adjusted, $bg));
+    }
+
+    public function testRequiredAlphaCanTargetFullPrecision(): void
+    {
+        $fg = Color::parse('#f59e0b');
+        $bg = Color::parse('#1e293b');
+
+        $alpha = ContrastSolver::requiredAlpha($fg, $bg, 4.5, 0);
+
+        $this->assertGreaterThanOrEqual(4.5, ContrastSolver::compositedRatio($fg->withAlpha($alpha), $bg));
+    }
 }

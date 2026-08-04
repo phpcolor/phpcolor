@@ -63,9 +63,13 @@ final class ContrastSolver
     /**
      * Find the minimum alpha required for a foreground to reach a target contrast ratio.
      *
-     * Uses binary search to find the minimal alpha value in range [0, 1].
+     * Uses binary search to find the minimal alpha value in range [0, 1]. The
+     * search verifies each candidate at $quantizePrecision bits per channel
+     * (8 by default, matching a serialized hex alpha byte), so the returned
+     * alpha still meets the target after that rounding. Pass 0 to search at
+     * full float precision instead.
      */
-    public static function requiredAlpha(ColorInterface $fg, ColorInterface $bg, float $targetRatio = 4.5): float
+    public static function requiredAlpha(ColorInterface $fg, ColorInterface $bg, float $targetRatio = 4.5, int $quantizePrecision = 8): float
     {
         $low = 0.0;
         $high = 1.0;
@@ -79,7 +83,7 @@ final class ContrastSolver
 
         for ($i = 0; $i < 24; ++$i) {
             $mid = 0.5 * ($low + $high);
-            $ratio = self::compositedRatio($fg->withAlpha($mid), $bg);
+            $ratio = self::compositedRatio($fg->withAlpha(self::quantizeChannel($mid, $quantizePrecision)), $bg);
             if ($ratio >= $targetRatio) {
                 $high = $mid;
             } else {
@@ -87,19 +91,24 @@ final class ContrastSolver
             }
         }
 
-        return max(0.0, min(1.0, $high));
+        return max(0.0, min(1.0, self::quantizeChannel($high, $quantizePrecision)));
     }
 
     /**
      * Adjust the lightness of a foreground color to meet a target contrast ratio.
      *
      * Preserves the chroma and hue of the color while searching for the minimal
-     * lightness adjustment in Oklch space.
+     * lightness adjustment in Oklch space. The search verifies each candidate
+     * at $quantizePrecision bits per channel (8 by default, matching a
+     * serialized hex color), so the returned color still meets the target
+     * after that rounding. Pass 0 to search at full float precision instead.
      */
-    public static function adjustLightnessToContrast(ColorInterface $fg, ColorInterface $bg, float $targetRatio = 4.5): ColorInterface
+    public static function adjustLightnessToContrast(ColorInterface $fg, ColorInterface $bg, float $targetRatio = 4.5, int $quantizePrecision = 8): ColorInterface
     {
         $oklch = $fg->to('oklch');
         $lch = $oklch instanceof OklchColor ? $oklch : OklchColor::fromSrgb($oklch->toSrgb());
+
+        $bgSrgb = self::quantizeColor($bg->toSrgb(), $quantizePrecision);
 
         $best = $fg;
         $bestHit = false;
@@ -111,7 +120,8 @@ final class ContrastSolver
             for ($i = 0; $i < 20; ++$i) {
                 $mid = 0.5 * ($lo + $hi);
                 $cand = new OklchColor($mid, $lch->c, $lch->h, $lch->alpha);
-                $ratio = ColorContrast::calculate($cand->toSrgb(), $bg->toSrgb());
+                $candSrgb = self::quantizeColor($cand->toSrgb(), $quantizePrecision);
+                $ratio = ColorContrast::calculate($candSrgb, $bgSrgb);
                 if ($ratio >= $targetRatio) {
                     $hi = $mid;
                     $best = $cand;
@@ -126,6 +136,39 @@ final class ContrastSolver
         }
 
         return $best->to($fg::getSpaceName());
+    }
+
+    /**
+     * Round a channel value to the nearest level of an N-bit grid.
+     *
+     * A precision of 0 disables quantization and returns the value unchanged.
+     */
+    private static function quantizeChannel(float $value, int $bits): float
+    {
+        if ($bits <= 0) {
+            return $value;
+        }
+
+        $levels = (2 ** $bits) - 1;
+
+        return round(max(0.0, min(1.0, $value)) * $levels) / $levels;
+    }
+
+    /**
+     * Round every RGB channel of a color to the nearest level of an N-bit grid.
+     */
+    private static function quantizeColor(SrgbColor $c, int $bits): SrgbColor
+    {
+        if ($bits <= 0) {
+            return $c;
+        }
+
+        return new SrgbColor(
+            self::quantizeChannel($c->r, $bits),
+            self::quantizeChannel($c->g, $bits),
+            self::quantizeChannel($c->b, $bits),
+            $c->a,
+        );
     }
 
     /**
