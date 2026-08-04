@@ -86,7 +86,7 @@ final readonly class DeltaE94 implements ColorDistanceInterface
         return sqrt(
             ($deltaL / $this->kL) ** 2
             + ($deltaC / ($this->kC * $SC)) ** 2
-            + ($deltaH / $this->kH * $SH) ** 2
+            + ($deltaH / ($this->kH * $SH)) ** 2
         );
     }
 
