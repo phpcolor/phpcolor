@@ -16,6 +16,6 @@ namespace PhpColor\Color\Exception;
 /**
  * Common interface for all exceptions thrown by the PHPColor library.
  */
-interface ColorExceptionInterface
+interface ColorExceptionInterface extends \Throwable
 {
 }
