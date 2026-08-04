@@ -15,6 +15,7 @@ namespace PhpColor\Color\Gradient;
 
 use PhpColor\Color\Color;
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Exception\InvalidColorException;
 
 /**
  * Abstract base class for gradient implementations.
@@ -31,6 +32,35 @@ abstract readonly class AbstractGradient implements GradientInterface
         protected array $stops = [],
         protected InterpolationSpace $interpolationSpace = InterpolationSpace::Oklab,
     ) {
+    }
+
+    /**
+     * Ensure the gradient can be rendered as CSS.
+     *
+     * @throws InvalidColorException if the gradient has fewer than 2 color stops
+     */
+    protected function assertMinimumStops(): void
+    {
+        $count = \count($this->stops);
+
+        if ($count < 2) {
+            throw new InvalidColorException(\sprintf('A %s gradient requires at least 2 color stops, %d given.', $this->getType(), $count));
+        }
+    }
+
+    /**
+     * Format the interpolation space for CSS output.
+     *
+     * The clause is always emitted: the CSS default is sRGB, which matches
+     * neither of the spaces this library interpolates in. InterpolationSpace::Srgb
+     * mixes linearized channels, so it maps to the CSS srgb-linear space.
+     */
+    protected function formatInterpolationSpace(): string
+    {
+        return match ($this->interpolationSpace) {
+            InterpolationSpace::Oklab => 'in oklab',
+            InterpolationSpace::Srgb => 'in srgb-linear',
+        };
     }
 
     /**

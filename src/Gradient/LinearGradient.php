@@ -83,14 +83,14 @@ final readonly class LinearGradient extends AbstractGradient
 
     public function toCss(?string $colorSpace = null): string
     {
-        $angleDeg = round($this->angle, 2);
-        $stopsStr = $this->formatStops($colorSpace);
+        $this->assertMinimumStops();
 
-        if (0 === \count($this->stops)) {
-            return \sprintf('linear-gradient(%sdeg)', $angleDeg);
-        }
+        $params = [
+            \sprintf('%sdeg', round($this->angle, 2)),
+            $this->formatInterpolationSpace(),
+        ];
 
-        return \sprintf('linear-gradient(%sdeg, %s)', $angleDeg, $stopsStr);
+        return \sprintf('linear-gradient(%s, %s)', implode(' ', $params), $this->formatStops($colorSpace));
     }
 
     /**
