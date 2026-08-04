@@ -221,4 +221,72 @@ final class CallableColorPaletteTransformerTest extends TestCase
         $result = $transformer->transform($palette);
         $this->assertInstanceOf(ColorPalette::class, $result);
     }
+
+    public function testTransformKeepsScalePaletteAsScale(): void
+    {
+        $palette = ColorPalette::scale([
+            Color::parse('#000000'),
+            Color::parse('#808080'),
+            Color::parse('#ffffff'),
+        ]);
+
+        $transformer = new CallableColorPaletteTransformer(static fn (ColorInterface $c): ColorInterface => $c);
+        $result = $transformer->transform($palette);
+
+        $this->assertFalse($result->isNamed());
+        $this->assertSame([0, 1, 2], array_keys($result->all()));
+        $this->assertSame([], $result->names());
+    }
+
+    public function testTransformKeepsNamedPaletteAsNamed(): void
+    {
+        $palette = ColorPalette::named([
+            'primary' => Color::parse('#ff0000'),
+            'secondary' => Color::parse('#00ff00'),
+        ]);
+
+        $transformer = new CallableColorPaletteTransformer(static fn (ColorInterface $c): ColorInterface => $c);
+        $result = $transformer->transform($palette);
+
+        $this->assertTrue($result->isNamed());
+        $this->assertSame(['primary', 'secondary'], array_keys($result->all()));
+        $this->assertSame(['primary' => '#ff0000', 'secondary' => '#00ff00'], $result->toHex());
+    }
+
+    public function testScaleOnlyOperationsWorkOnTransformedPalette(): void
+    {
+        $palette = ColorPalette::scale([
+            Color::parse('#000000'),
+            Color::parse('#808080'),
+            Color::parse('#ffffff'),
+        ]);
+
+        $transformer = new CallableColorPaletteTransformer(static fn (ColorInterface $c): ColorInterface => $c);
+        $result = $transformer->transform($palette);
+
+        $this->assertSame('#ffffff', $result->at(1.0)->toHex());
+        $this->assertSame(['#ffffff', '#808080', '#000000'], array_values($result->reverse()->toHex()));
+        $this->assertSame(2, $result->slice(1)->count());
+    }
+
+    public function testTransformAppliesCallableToEveryColor(): void
+    {
+        $palette = ColorPalette::scale([
+            Color::parse('#000000'),
+            Color::parse('#808080'),
+            Color::parse('#ffffff'),
+        ]);
+
+        $seen = [];
+        $transformer = new CallableColorPaletteTransformer(static function (ColorInterface $c) use (&$seen): ColorInterface {
+            $seen[] = $c->toHex();
+
+            return Color::parse('#ff0000');
+        });
+
+        $result = $transformer->transform($palette);
+
+        $this->assertSame(['#000000', '#808080', '#ffffff'], $seen);
+        $this->assertSame(['#ff0000', '#ff0000', '#ff0000'], array_values($result->toHex()));
+    }
 }
