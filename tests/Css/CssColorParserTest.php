@@ -18,6 +18,7 @@ use PhpColor\Color\Css\CssColorParser;
 use PhpColor\Color\DisplayP3Color;
 use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\Exception\ParseException;
+use PhpColor\Color\HwbColor;
 use PhpColor\Color\LabColor;
 use PhpColor\Color\LchColor;
 use PhpColor\Color\OklabColor;
@@ -415,6 +416,53 @@ final class CssColorParserTest extends TestCase
 
         $rgb = CssColorParser::parse('rgb(from red r g b / 50%)');
         $this->assertEqualsWithDelta(0.5, $rgb->getAlpha(), 1e-9);
+    }
+
+    public function testRelativeHwbAlphaSlash(): void
+    {
+        $c = CssColorParser::parse('hwb(from red h w b / 50%)');
+
+        $this->assertInstanceOf(HwbColor::class, $c);
+        $this->assertEqualsWithDelta(0.5, $c->getAlpha(), 1e-9);
+        $this->assertSame('#ff0000', $c->toSrgb()->toHex());
+    }
+
+    public function testRelativeHwbFromNonHwbOrigin(): void
+    {
+        $c = CssColorParser::parse('hwb(from hsl(120 100% 50%) h w b)');
+
+        $this->assertInstanceOf(HwbColor::class, $c);
+        $this->assertEqualsWithDelta(120.0, $c->h, 1e-9);
+        $this->assertSame('#00ff00', $c->toSrgb()->toHex());
+    }
+
+    public function testRelativeHwbIdentityRoundTrip(): void
+    {
+        $red = CssColorParser::parse('hwb(from red h w b)');
+
+        $this->assertInstanceOf(HwbColor::class, $red);
+        $this->assertSame('#ff0000', $red->toSrgb()->toHex());
+
+        $tinted = CssColorParser::parse('hwb(from #ff8080 h w b)');
+
+        $this->assertInstanceOf(HwbColor::class, $tinted);
+        $this->assertSame('#ff8080', $tinted->toSrgb()->toHex());
+    }
+
+    public function testRelativeHwbModifiedChannels(): void
+    {
+        $whiter = CssColorParser::parse('hwb(from red h 50% b)');
+
+        $this->assertInstanceOf(HwbColor::class, $whiter);
+        $this->assertEqualsWithDelta(0.5, $whiter->w, 1e-9);
+        $this->assertEqualsWithDelta(0.0, $whiter->b, 1e-9);
+
+        // "b" is blackness, not blue: 25% blackness darkens red to #bf0000
+        $blacker = CssColorParser::parse('hwb(from red h w calc(b + 0.25))');
+
+        $this->assertInstanceOf(HwbColor::class, $blacker);
+        $this->assertEqualsWithDelta(0.25, $blacker->b, 1e-9);
+        $this->assertSame('#bf0000', $blacker->toSrgb()->toHex());
     }
 
     public function testRelativeInvalidInnerSyntaxThrows(): void

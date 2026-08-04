@@ -55,6 +55,7 @@ final class ColorSpacesTest extends TestCase
     public static function expectedChannelsProvider(): iterable
     {
         yield ['hsl', ['h', 's', 'l']];
+        yield ['hwb', ['h', 'w', 'b']];
         yield ['oklab', ['l', 'a', 'b']];
         yield ['oklch', ['l', 'c', 'h']];
         yield ['srgb', ['r', 'g', 'b']];
