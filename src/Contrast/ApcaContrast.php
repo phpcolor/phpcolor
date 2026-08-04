@@ -17,75 +17,88 @@ use PhpColor\Color\ColorInterface;
 use PhpColor\Color\SrgbColor;
 
 /**
- * APCA (Advanced Perceptual Contrast Algorithm) approximate implementation.
+ * APCA (Advanced Perceptual Contrast Algorithm) Lc calculation.
+ *
+ * Implements the canonical APCA 0.0.98G "G-4g" base algorithm (SAPC-8, simple
+ * version), ported from the W3-licensed reference implementation at
+ * https://github.com/Myndex/apca-w3 (Beta 0.1.9, 2022-07-03 revision).
  *
  * Notes:
- * - This implementation targets the commonly used constants for sRGB (v0.98x family).
  * - Returns Lc (contrast) where sign indicates polarity:
  *   + Positive: dark text on light background (preferred polarity)
  *   - Negative: light text on dark background (reverse polarity)
  * - Values roughly in the range [-108, +108].
+ * - Alpha is ignored, matching ColorContrast's WCAG calculation.
  */
 final class ApcaContrast
 {
+    private const float MAIN_TRC = 2.4;
+
+    private const float S_R_CO = 0.2126729;
+    private const float S_G_CO = 0.7151522;
+    private const float S_B_CO = 0.0721750;
+
+    private const float NORM_BG = 0.56;
+    private const float NORM_TXT = 0.57;
+    private const float REV_TXT = 0.62;
+    private const float REV_BG = 0.65;
+
+    private const float BLACK_THRESHOLD = 0.022;
+    private const float BLACK_CLAMP = 1.414;
+
+    private const float SCALE_BOW = 1.14;
+    private const float SCALE_WOB = 1.14;
+    private const float LOW_CONTRAST_BOW_OFFSET = 0.027;
+    private const float LOW_CONTRAST_WOB_OFFSET = 0.027;
+    private const float LOW_CONTRAST_CLIP = 0.1;
+    private const float DELTA_Y_MIN = 0.0005;
+
     /**
-     * Compute APCA Lc for two colors (foreground over background).
+     * Compute APCA Lc for two colors (foreground text over background).
      */
     public static function lc(ColorInterface $fg, ColorInterface $bg): float
     {
-        $fgY = self::relLumi($fg->toSrgb());
+        $txtY = self::relLumi($fg->toSrgb());
         $bgY = self::relLumi($bg->toSrgb());
 
-        if (abs($bgY - $fgY) < 1e-9) {
+        if (is_nan($txtY) || is_nan($bgY) || min($txtY, $bgY) < 0.0 || max($txtY, $bgY) > 1.1) {
             return 0.0;
         }
-        $isNormalPolarity = $bgY > $fgY;
 
-        $normBGExp = 0.56;
-        $normFGExp = 0.57;
-        $revBGExp = 0.65;
-        $revFGExp = 0.62;
+        $txtY = self::softClampBlack($txtY);
+        $bgY = self::softClampBlack($bgY);
 
-        $scaleNorm = 1.14;
-        $scaleRev = 1.14;
-
-        $blk = 0.003;
-
-        if ($isNormalPolarity) {
-            $c = ($bgY ** $normBGExp) - ($fgY ** $normFGExp);
-            $Lc = 100.0 * $scaleNorm * $c;
-        } else {
-            $fgY = max($fgY, $blk);
-            $bgY = max($bgY, $blk);
-
-            $c = ($fgY ** $revFGExp) - ($bgY ** $revBGExp);
-            $Lc = -100.0 * $scaleRev * $c;
+        if (abs($bgY - $txtY) < self::DELTA_Y_MIN) {
+            return 0.0;
         }
 
-        return abs($Lc) < 0.1 ? 0.0 : $Lc;
+        if ($bgY > $txtY) {
+            $sapc = ($bgY ** self::NORM_BG - $txtY ** self::NORM_TXT) * self::SCALE_BOW;
+            $outputContrast = $sapc < self::LOW_CONTRAST_CLIP ? 0.0 : $sapc - self::LOW_CONTRAST_BOW_OFFSET;
+        } else {
+            $sapc = ($bgY ** self::REV_BG - $txtY ** self::REV_TXT) * self::SCALE_WOB;
+            $outputContrast = $sapc > -self::LOW_CONTRAST_CLIP ? 0.0 : $sapc + self::LOW_CONTRAST_WOB_OFFSET;
+        }
+
+        return $outputContrast * 100.0;
     }
 
     /**
-     * Calculate the relative luminance of an sRGB color.
+     * Soft-clamp luminance near black so the reverse-polarity formula does
+     * not divide the result by an unrealistically dark reference point.
+     */
+    private static function softClampBlack(float $y): float
+    {
+        return $y > self::BLACK_THRESHOLD ? $y : $y + (self::BLACK_THRESHOLD - $y) ** self::BLACK_CLAMP;
+    }
+
+    /**
+     * Calculate the APCA relative luminance of an sRGB color.
      */
     private static function relLumi(SrgbColor $c): float
     {
-        $r = self::srgbToLinear($c->r);
-        $g = self::srgbToLinear($c->g);
-        $b = self::srgbToLinear($c->b);
-
-        return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
-    }
-
-    /**
-     * Convert an sRGB color component to linear.
-     */
-    private static function srgbToLinear(float $c): float
-    {
-        if (0.04045 >= $c) {
-            return $c / 12.92;
-        }
-
-        return (($c + 0.055) / 1.055) ** 2.4;
+        return self::S_R_CO * ($c->r ** self::MAIN_TRC)
+            + self::S_G_CO * ($c->g ** self::MAIN_TRC)
+            + self::S_B_CO * ($c->b ** self::MAIN_TRC);
     }
 }
