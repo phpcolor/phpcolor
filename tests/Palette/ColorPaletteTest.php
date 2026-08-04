@@ -16,6 +16,7 @@ namespace PhpColor\Color\Tests\Palette;
 use PhpColor\Color\AbstractColor;
 use PhpColor\Color\Color;
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Distance\Ciede2000;
 use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\OklchColor;
 use PhpColor\Color\Palette\ColorPalette;
@@ -189,6 +190,17 @@ final class ColorPaletteTest extends TestCase
         $this->assertInstanceOf(ColorInterface::class, $closest);
     }
 
+    public function testClosestDefaultsToOklabEuclideanDistance(): void
+    {
+        $palette = ColorPalette::fromHex(['#000000', '#404040', '#808080', '#c0c0c0', '#ffffff', '#00007f', '#7f0000', '#007f00']);
+
+        $this->assertSame('#404040', $palette->closest(Color::parse('#002233'))->toHex());
+        $this->assertSame('#808080', $palette->closest(Color::parse('#fe0000'))->toHex());
+        $this->assertSame('#c0c0c0', $palette->closest(Color::parse('#00ff00'))->toHex());
+        $this->assertSame('#404040', $palette->closest(Color::parse('#123456'))->toHex());
+        $this->assertSame('#ffffff', $palette->closest(Color::parse('#eeeeee'))->toHex());
+    }
+
     public function testClosestEmptyThrows(): void
     {
         $palette = ColorPalette::scale([Color::parse('#ff0000')]);
@@ -196,6 +208,25 @@ final class ColorPaletteTest extends TestCase
 
         $this->expectException(InvalidColorException::class);
         $filtered->closest(Color::parse('#000000'));
+    }
+
+    public function testClosestEmptyWithMetricThrows(): void
+    {
+        $palette = ColorPalette::scale([Color::parse('#ff0000')]);
+        $filtered = $palette->filter(static fn (): false => false);
+
+        $this->expectException(InvalidColorException::class);
+        $filtered->closest(Color::parse('#000000'), new Ciede2000());
+    }
+
+    public function testClosestWithCiede2000Metric(): void
+    {
+        $palette = ColorPalette::fromHex(['#000000', '#404040', '#808080', '#c0c0c0', '#ffffff', '#00007f', '#7f0000', '#007f00']);
+        $target = Color::parse('#002233');
+
+        // Oklab Euclidean picks the neutral grey, CIEDE2000 discounts the chroma difference and picks the navy.
+        $this->assertSame('#404040', $palette->closest($target)->toHex());
+        $this->assertSame('#00007f', $palette->closest($target, new Ciede2000())->toHex());
     }
 
     public function testClosestWithExactMatch(): void
@@ -206,6 +237,16 @@ final class ColorPaletteTest extends TestCase
         $closest = $palette->closest($target);
 
         $this->assertSame('#00ff00', $closest->toHex());
+    }
+
+    public function testClosestWithMetricAndSingleColor(): void
+    {
+        $palette = ColorPalette::fromHex(['#ff0000']);
+        $target = Color::parse('#0000ff');
+
+        $closest = $palette->closest($target, new Ciede2000());
+
+        $this->assertSame('#ff0000', $closest->toHex());
     }
 
     public function testClosestWithSingleColor(): void

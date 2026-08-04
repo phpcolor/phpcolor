@@ -15,6 +15,7 @@ namespace PhpColor\Color\Palette;
 
 use PhpColor\Color\Color;
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Distance\ColorDistanceInterface;
 use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\OklabColor;
 use PhpColor\Color\OklchColor;
@@ -204,7 +205,7 @@ final readonly class ColorPalette implements ColorPaletteInterface
         return Color::mix($colors[$index], $colors[$index + 1], $fraction, 'oklab');
     }
 
-    public function closest(ColorInterface $target): ColorInterface
+    public function closest(ColorInterface $target, ?ColorDistanceInterface $metric = null): ColorInterface
     {
         if ([] === $this->colors) {
             throw new InvalidColorException('Cannot find closest color in empty palette.');
@@ -216,11 +217,7 @@ final readonly class ColorPalette implements ColorPaletteInterface
         $minDistance = \PHP_FLOAT_MAX;
         $closest = array_values($this->colors)[0];
         foreach ($this->colors as $color) {
-            $oklab = $color->to('oklab');
-            if (!$oklab instanceof OklabColor) {
-                $oklab = OklabColor::fromSrgb($oklab->toSrgb());
-            }
-            $distance = sqrt(($targetOklab->l - $oklab->l) ** 2 + ($targetOklab->a - $oklab->a) ** 2 + ($targetOklab->b - $oklab->b) ** 2);
+            $distance = $metric?->calculate($target, $color) ?? self::oklabDistance($targetOklab, $color);
             if ($distance < $minDistance) {
                 $minDistance = $distance;
                 $closest = $color;
@@ -368,5 +365,18 @@ final readonly class ColorPalette implements ColorPaletteInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Default metric of closest(): Euclidean distance in the Oklab color space.
+     */
+    private static function oklabDistance(OklabColor $target, ColorInterface $color): float
+    {
+        $oklab = $color->to('oklab');
+        if (!$oklab instanceof OklabColor) {
+            $oklab = OklabColor::fromSrgb($oklab->toSrgb());
+        }
+
+        return sqrt(($target->l - $oklab->l) ** 2 + ($target->a - $oklab->a) ** 2 + ($target->b - $oklab->b) ** 2);
     }
 }
