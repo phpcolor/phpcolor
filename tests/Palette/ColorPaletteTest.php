@@ -817,12 +817,29 @@ final class ColorPaletteTest extends TestCase
         $this->assertStringContainsString('--color-test: #ff0000;', $css);
     }
 
+    public function testToCssVariablesKeepsSixDigitsWhenOpaque(): void
+    {
+        $palette = ColorPalette::named(['primary' => Color::parse('rgb(255 0 0 / 1)')]);
+
+        $this->assertSame("  --color-primary: #ff0000;\n", $palette->toCssVariables());
+    }
+
     public function testToCssVariablesScaleThrows(): void
     {
         $palette = ColorPalette::fromHex(['#3b82f6', '#10b981']);
 
         $this->expectException(InvalidColorException::class);
         $palette->toCssVariables();
+    }
+
+    public function testToCssVariablesWithAlpha(): void
+    {
+        $palette = ColorPalette::named([
+            'primary' => Color::parse('#ff0000'),
+            'ghost' => Color::parse('rgb(0 0 255 / 0.25)'),
+        ]);
+
+        $this->assertSame("  --color-primary: #ff0000;\n  --color-ghost: #0000ff40;\n", $palette->toCssVariables());
     }
 
     public function testToCssVariablesWithCustomPrefix(): void

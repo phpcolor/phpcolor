@@ -155,7 +155,15 @@ final readonly class HwbColor extends AbstractColor
             self::normalizeSpaceName($space);
         }
 
-        return \sprintf('hwb(%s %s%% %s%%)', self::formatCssFloat($this->h), self::formatCssFloat($this->w * 100.0), self::formatCssFloat($this->b * 100.0));
+        $h = self::formatCssFloat($this->h);
+        $w = self::formatCssFloat($this->w * 100.0);
+        $b = self::formatCssFloat($this->b * 100.0);
+        if (1.0 === $this->alpha) {
+            return \sprintf('hwb(%s %s%% %s%%)', $h, $w, $b);
+        }
+        $alpha = self::formatCssFloat($this->alpha);
+
+        return \sprintf('hwb(%s %s%% %s%% / %s)', $h, $w, $b, $alpha);
     }
 
     public function toSrgb(): SrgbColor

@@ -354,7 +354,7 @@ final readonly class ColorPalette implements ColorPaletteInterface
         }
         $css = '';
         foreach ($this->colors as $name => $color) {
-            $css .= \sprintf("  --%s-%s: %s;\n", $prefix, $name, $color->toHex());
+            $css .= \sprintf("  --%s-%s: %s;\n", $prefix, $name, $color->toHex(!$color->isOpaque()));
         }
 
         return $css;
