@@ -13,12 +13,20 @@ declare(strict_types=1);
 
 namespace PhpColor\Color\Palette\Harmony;
 
+/**
+ * Color wheel harmony patterns, defined by hue offsets from a base color.
+ */
 enum HarmonyPattern: string
 {
+    /** Hues adjacent to the base, ±30°. */
     case Analogous = 'analogous';
+    /** Hue directly opposite the base, 180°. */
     case Complementary = 'complementary';
+    /** Two hues flanking the complement, 150°/210°. */
     case SplitComplementary = 'split_complementary';
+    /** Three hues evenly spaced, 120° apart. */
     case Triadic = 'triadic';
+    /** Four hues evenly spaced, 90° apart. */
     case Tetradic = 'tetradic';
 
     /**

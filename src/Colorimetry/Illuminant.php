@@ -21,19 +21,30 @@ namespace PhpColor\Color\Colorimetry;
  */
 enum Illuminant: string
 {
+    /** Incandescent/tungsten light, ~2856 K. */
     case A = 'A';
 
+    /** Deprecated daylight simulator, ~6774 K. */
     case C = 'C';
+    /** ~5003 K daylight; print and ICC profile reference white. */
     case D50 = 'D50';
+    /** ~5503 K daylight (mid-morning/afternoon). */
     case D55 = 'D55';
+    /** ~6000 K daylight; ACES reference white. */
     case D60 = 'D60';
+    /** ~6504 K daylight; sRGB and Display P3 reference white. */
     case D65 = 'D65';
+    /** ~7504 K daylight (overcast sky, north light). */
     case D75 = 'D75';
 
+    /** Theoretical equal-energy illuminant (flat spectrum). */
     case E = 'E';
+    /** Narrow-band white fluorescent, ~4000 K. */
     case F11 = 'F11';
 
+    /** Cool white fluorescent, ~4230 K. */
     case F2 = 'F2';
+    /** Broadband daylight fluorescent, ~6500 K. */
     case F7 = 'F7';
 
     /**

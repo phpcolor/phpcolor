@@ -18,12 +18,19 @@ namespace PhpColor\Color\Vision;
  */
 enum VisionProfile: string
 {
+    /** Red-absent dichromacy. */
     case Protanopia = 'protanopia';
+    /** Green-absent dichromacy. */
     case Deuteranopia = 'deuteranopia';
+    /** Blue-absent dichromacy. */
     case Tritanopia = 'tritanopia';
+    /** Reduced red sensitivity. */
     case Protanomaly = 'protanomaly';
+    /** Reduced green sensitivity (most common). */
     case Deuteranomaly = 'deuteranomaly';
+    /** Reduced blue sensitivity. */
     case Tritanomaly = 'tritanomaly';
+    /** Achromatic vision (no color discrimination). */
     case Monochromacy = 'monochromacy';
 
     /**

@@ -18,7 +18,9 @@ namespace PhpColor\Color\Contrast;
  */
 enum WcagLevel: string
 {
+    /** Minimum conformance: 4.5:1 normal text, 3:1 large text. */
     case AA = 'AA';
+    /** Enhanced conformance: 7:1 normal text, 4.5:1 large text. */
     case AAA = 'AAA';
 
     /*

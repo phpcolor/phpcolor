@@ -33,6 +33,11 @@ final readonly class LinearSrgbColor extends AbstractColor
         $this->a = min(max($a, 0.0), 1.0);
     }
 
+    /**
+     * Create color from channel values.
+     *
+     * @param array<string, float> $channels
+     */
     public static function fromChannels(array $channels, float $alpha = 1.0): static
     {
         return new self(
