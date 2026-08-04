@@ -18,6 +18,7 @@ use PhpColor\Color\ColorInterface;
 use PhpColor\Color\DisplayP3Color;
 use PhpColor\Color\Exception\ColorExceptionInterface;
 use PhpColor\Color\Exception\ParseException;
+use PhpColor\Color\HwbColor;
 use PhpColor\Color\LabColor;
 use PhpColor\Color\LchColor;
 use PhpColor\Color\OklabColor;
@@ -342,6 +343,7 @@ final class CssColorParser
                 's' => $outputChannels['channels']['s'] ?? 0.0,
                 'l' => $outputChannels['channels']['l'] ?? 0.0,
             ], $outputChannels['alpha']),
+            'hwb' => HwbColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'oklab' => OklabColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'oklch' => OklchColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'lab' => LabColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),

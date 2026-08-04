@@ -49,6 +49,7 @@ final class ColorSpaces
 
         return match ($s) {
             'hsl' => ['h', 's', 'l'],
+            'hwb' => ['h', 'w', 'b'],
             'oklab', 'lab' => ['l', 'a', 'b'],
             'oklch', 'lch' => ['l', 'c', 'h'],
             'cmyk' => ['c', 'm', 'y', 'k'],
