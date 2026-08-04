@@ -43,12 +43,6 @@ final readonly class CallableColorPaletteTransformer implements ColorPaletteTran
 
     public function transform(ColorPalette $palette): ColorPalette
     {
-        $newColors = [];
-
-        foreach ($palette->all() as $name => $color) {
-            $newColors[(string) $name] = ($this->callable)($color);
-        }
-
-        return ColorPalette::named($newColors);
+        return $palette->map($this->callable);
     }
 }
