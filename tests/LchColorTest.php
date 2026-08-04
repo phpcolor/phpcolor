@@ -38,16 +38,16 @@ final class LchColorTest extends ColorTestCase
     {
         // color, hex, hexWithAlpha, css
         yield 'red' => [
-            new LchColor(53.24, 104.55, 40.0),
+            new LchColor(54.29, 106.84, 40.86),
             '#ff0000',
             '#ff0000ff',
-            'lch(53.24 104.55 40)',
+            'lch(54.29 106.84 40.86)',
         ];
         yield 'translucent blue' => [
-            new LchColor(32.3, 133.81, 306.28, 0.5),
+            new LchColor(29.57, 131.2, 301.36, 0.5),
             '#0000ff',
             '#0000ff80',
-            'lch(32.3 133.81 306.28 / 0.5)',
+            'lch(29.57 131.2 301.36 / 0.5)',
         ];
     }
 
@@ -184,6 +184,78 @@ final class LchColorTest extends ColorTestCase
 
         $lch2 = new LchColor(150.0, 0.0, 0.0);
         $this->assertSame(100.0, $lch2->l);
+    }
+
+    #[DataProvider('provideCssColor4ReferenceValues')]
+    public function testMatchesCssColor4ReferenceValues(string $hex, float $l, float $c, float $h): void
+    {
+        $lch = LchColor::fromSrgb(SrgbColor::parseHex($hex));
+
+        $this->assertEqualsWithDelta($l, $lch->l, 0.05);
+        $this->assertEqualsWithDelta($c, $lch->c, 0.05);
+        $this->assertEqualsWithDelta($h, $lch->h, 0.05);
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: float, 2: float, 3: float}>
+     */
+    public static function provideCssColor4ReferenceValues(): iterable
+    {
+        // lch() coordinates per CSS Color 4, which defines LCH against the D50 reference white.
+        yield 'red' => ['#ff0000', 54.290541, 106.837182, 40.857657];
+        yield 'green' => ['#00ff00', 87.818534, 113.331475, 134.383856];
+        yield 'blue' => ['#0000ff', 29.568302, 131.201448, 301.364268];
+        yield 'steel blue' => ['#336699', 41.520824, 33.804944, 262.225262];
+        yield 'olive' => ['#7f7f00', 51.765383, 56.494889, 99.572255];
+    }
+
+    #[DataProvider('provideNeutrals')]
+    public function testNeutralsHaveZeroChroma(string $hex, float $l): void
+    {
+        $lch = LchColor::fromSrgb(SrgbColor::parseHex($hex));
+
+        $this->assertEqualsWithDelta($l, $lch->l, 0.001);
+        $this->assertEqualsWithDelta(0.0, $lch->c, 0.001);
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: float}>
+     */
+    public static function provideNeutrals(): iterable
+    {
+        yield 'white' => ['#ffffff', 100.0];
+        yield 'black' => ['#000000', 0.0];
+        yield 'mid gray' => ['#808080', 53.585013];
+    }
+
+    #[DataProvider('provideRoundTripHexColors')]
+    public function testRoundTripFromSrgb(string $hex): void
+    {
+        $srgb = SrgbColor::parseHex($hex);
+        $back = LchColor::fromSrgb($srgb)->toSrgb();
+
+        $this->assertEqualsWithDelta($srgb->r, $back->r, 0.001);
+        $this->assertEqualsWithDelta($srgb->g, $back->g, 0.001);
+        $this->assertEqualsWithDelta($srgb->b, $back->b, 0.001);
+    }
+
+    /**
+     * @return iterable<string, array{0: string}>
+     */
+    public static function provideRoundTripHexColors(): iterable
+    {
+        yield 'red' => ['#ff0000'];
+        yield 'green' => ['#00ff00'];
+        yield 'blue' => ['#0000ff'];
+        yield 'cyan' => ['#00ffff'];
+        yield 'magenta' => ['#ff00ff'];
+        yield 'yellow' => ['#ffff00'];
+        yield 'white' => ['#ffffff'];
+        yield 'black' => ['#000000'];
+        yield 'mid gray' => ['#808080'];
+        yield 'steel blue' => ['#336699'];
+        yield 'olive' => ['#7f7f00'];
+        yield 'salmon' => ['#fa8072'];
     }
 
     #[DataProvider('provideParseCases')]

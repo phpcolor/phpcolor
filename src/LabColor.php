@@ -21,7 +21,8 @@ use PhpColor\Color\Exception\ParseException;
  *
  * CIELAB (or Lab) is a device-independent color space that covers the entire
  * range of human color perception. Components are lightness (L), and two
- * color-opponent dimensions (a and b).
+ * color-opponent dimensions (a and b). As specified by CSS Color 4 and ICC,
+ * it uses a D50 white point, so the D65 pipeline is adapted with Bradford.
  */
 final readonly class LabColor extends AbstractColor
 {
@@ -67,13 +68,16 @@ final readonly class LabColor extends AbstractColor
      */
     public static function fromXyz(XyzColor $xyz): static
     {
-        $xn = 0.95047;
-        $yn = 1.0;
-        $zn = 1.08883;
+        $white = Colorimetry\ReferenceWhite::forSpace('lab');
+        $adapted = Colorimetry\Adaptation\Bradford::adaptXYZ(
+            [$xyz->x, $xyz->y, $xyz->z],
+            Colorimetry\Illuminant::D65->whitePoint(),
+            $white
+        );
 
-        $x = $xyz->x / $xn;
-        $y = $xyz->y / $yn;
-        $z = $xyz->z / $zn;
+        $x = $adapted[0] / $white->X;
+        $y = $adapted[1] / $white->Y;
+        $z = $adapted[2] / $white->Z;
 
         $epsilon = 0.008856;
         $kappa = 903.3;
@@ -192,9 +196,7 @@ final readonly class LabColor extends AbstractColor
      */
     public function toXyz(): XyzColor
     {
-        $xn = 0.95047;
-        $yn = 1.0;
-        $zn = 1.08883;
+        $white = Colorimetry\ReferenceWhite::forSpace('lab');
 
         $fy = ($this->l + 16.0) / 116.0;
         $fx = $this->a / 500.0 + $fy;
@@ -210,10 +212,12 @@ final readonly class LabColor extends AbstractColor
         $y = ($this->l > $kappa * $epsilon) ? (($this->l + 16.0) / 116.0) ** 3.0 : $this->l / $kappa;
         $z = ($fz3 > $epsilon) ? $fz3 : (116.0 * $fz - 16.0) / $kappa;
 
-        $x *= $xn;
-        $y *= $yn;
-        $z *= $zn;
+        $adapted = Colorimetry\Adaptation\Bradford::adaptXYZ(
+            [$x * $white->X, $y * $white->Y, $z * $white->Z],
+            $white,
+            Colorimetry\Illuminant::D65->whitePoint()
+        );
 
-        return new XyzColor($x, $y, $z, $this->alpha);
+        return new XyzColor($adapted[0], $adapted[1], $adapted[2], $this->alpha);
     }
 }
