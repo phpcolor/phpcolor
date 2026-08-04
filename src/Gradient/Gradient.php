@@ -99,55 +99,88 @@ final class Gradient
     }
 
     /**
-     * Auto-distribute color stops evenly across the gradient.
+     * Resolve the positions of stops that were given without one.
      *
-     * @param list<GradientStop> $stops
+     * Explicit positions are kept as-is. Stops without a position are spread evenly between the
+     * surrounding explicit positions: from 0 before the first explicit position, up to 1 after the
+     * last one, and evenly across the whole gradient when no position is explicit at all.
      *
-     * @return list<GradientStop>
+     * @internal
+     *
+     * @param list<float|null> $positions Explicit positions, null where the caller gave none
+     *
+     * @return list<float>
      */
-    private static function distributeStops(array $stops): array
+    public static function distributePositions(array $positions): array
     {
-        $count = \count($stops);
-        if ($count <= 1) {
-            return $stops;
+        $count = \count($positions);
+        $resolved = [];
+        $index = 0;
+
+        while ($index < $count) {
+            $position = $positions[$index];
+            if (null !== $position) {
+                $resolved[] = $position;
+                ++$index;
+
+                continue;
+            }
+
+            $last = $index;
+            while ($last + 1 < $count && null === $positions[$last + 1]) {
+                ++$last;
+            }
+
+            $before = $index > 0 ? $positions[$index - 1] : null;
+            $after = $last + 1 < $count ? $positions[$last + 1] : null;
+            $length = $last - $index + 1;
+
+            for ($i = 0; $i < $length; ++$i) {
+                if (null !== $before && null !== $after) {
+                    $resolved[] = $before + ($after - $before) * ($i + 1) / ($length + 1);
+                } elseif (null !== $after) {
+                    $resolved[] = $after * $i / $length;
+                } elseif (null !== $before) {
+                    $resolved[] = $before + (1.0 - $before) * ($i + 1) / $length;
+                } else {
+                    $resolved[] = $length > 1 ? (float) $i / ($length - 1) : 0.0;
+                }
+            }
+
+            $index = $last + 1;
         }
 
-        $distributed = [];
-        $den = $count - 1;
-        foreach ($stops as $i => $stop) {
-            $position = $i / $den;
-            $distributed[] = new GradientStop($stop->color, $position);
-        }
-
-        return $distributed;
+        return $resolved;
     }
 
     /**
      * Normalize stops to GradientStop objects.
      *
-     * Converts colors/strings to GradientStop objects and auto-distributes positions if needed.
+     * Converts colors/strings to GradientStop objects, keeping the positions carried by the
+     * GradientStop arguments and distributing the others around them.
      *
      * @return list<GradientStop>
      */
     private static function normalizeStops(ColorInterface|GradientStop|string ...$stops): array
     {
-        $gradientStops = [];
-        $needsDistribution = false;
+        $colors = [];
+        $positions = [];
 
         foreach ($stops as $stop) {
             if ($stop instanceof GradientStop) {
-                $gradientStops[] = $stop;
+                $colors[] = $stop->color;
+                $positions[] = $stop->position;
             } else {
-                $color = \is_string($stop) ? Color::parse($stop) : $stop;
-                $gradientStops[] = new GradientStop($color, 0.0);
-                $needsDistribution = true;
+                $colors[] = \is_string($stop) ? Color::parse($stop) : $stop;
+                $positions[] = null;
             }
         }
 
-        if (!$needsDistribution) {
-            return $gradientStops;
+        $gradientStops = [];
+        foreach (self::distributePositions($positions) as $i => $position) {
+            $gradientStops[] = new GradientStop($colors[$i], $position);
         }
 
-        return self::distributeStops($gradientStops);
+        return $gradientStops;
     }
 }

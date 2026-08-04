@@ -107,6 +107,91 @@ final class GradientBuilderTest extends TestCase
         $stops = $gradient->getStops();
         $this->assertCount(2, $stops);
         $this->assertEqualsWithDelta(0.25, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(1.0, $stops[1]->position, 1e-12);
+    }
+
+    public function testBuilderStopsKeepsExplicitPositionMixedWithPlainColor(): void
+    {
+        $gradient = GradientBuilder::linear(180.0)
+            ->stops('#000000', new GradientStop(Color::parse('#ff0000'), 0.9))
+            ->build();
+
+        $stops = $gradient->getStops();
+        $this->assertCount(2, $stops);
+        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.9, $stops[1]->position, 1e-12);
+        $this->assertStringContainsString('rgb(255 0 0) 90%', $gradient->toCss());
+    }
+
+    public function testBuilderStopsSpreadsPlainColorBetweenExplicitStops(): void
+    {
+        $gradient = GradientBuilder::linear()
+            ->stops(
+                new GradientStop(Color::parse('#ff0000'), 0.2),
+                '#000000',
+                new GradientStop(Color::parse('#00ff00'), 0.8),
+            )
+            ->build();
+
+        $stops = $gradient->getStops();
+        $this->assertCount(3, $stops);
+        $this->assertEqualsWithDelta(0.2, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.5, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.8, $stops[2]->position, 1e-12);
+    }
+
+    public function testBuilderStopsWithOnlyExplicitStopsKeepsEveryPosition(): void
+    {
+        $gradient = GradientBuilder::linear()
+            ->stops(
+                new GradientStop(Color::parse('#ff0000'), 0.3),
+                new GradientStop(Color::parse('#00ff00'), 0.7),
+            )
+            ->build();
+
+        $stops = $gradient->getStops();
+        $this->assertCount(2, $stops);
+        $this->assertEqualsWithDelta(0.3, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.7, $stops[1]->position, 1e-12);
+    }
+
+    public function testBuilderStopsWithSingleColorStartsAtZero(): void
+    {
+        $gradient = GradientBuilder::linear()->stops('#ff0000')->build();
+
+        $stops = $gradient->getStops();
+        $this->assertCount(1, $stops);
+        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12);
+    }
+
+    public function testBuilderStopsSpreadsAfterAlreadyAddedStops(): void
+    {
+        $gradient = GradientBuilder::linear()->from('#000000')->stops('#888888', '#ffffff')->build();
+
+        $stops = $gradient->getStops();
+        $this->assertCount(3, $stops);
+        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.5, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(1.0, $stops[2]->position, 1e-12);
+    }
+
+    public function testBuilderStopsMatchesFacadeForMixedStops(): void
+    {
+        $arguments = [
+            '#000000',
+            new GradientStop(Color::parse('#ff0000'), 0.2),
+            '#888888',
+            new GradientStop(Color::parse('#00ff00'), 0.8),
+            '#ffffff',
+        ];
+
+        $built = GradientBuilder::linear(180.0)->stops(...$arguments)->build();
+        $direct = Gradient::linear(180.0, ...$arguments);
+
+        $this->assertSame(
+            array_column($direct->getStops(), 'position'),
+            array_column($built->getStops(), 'position'),
+        );
     }
 
     public function testBuilderStopsMethod(): void

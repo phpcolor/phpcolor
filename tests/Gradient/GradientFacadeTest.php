@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhpColor\Color\Tests\Gradient;
 
+use PhpColor\Color\Color;
 use PhpColor\Color\Gradient\ConicGradient;
 use PhpColor\Color\Gradient\Gradient;
 use PhpColor\Color\Gradient\GradientBuilder;
@@ -56,19 +57,108 @@ final class GradientFacadeTest extends TestCase
     public function testLinearWithMixedStopTypes(): void
     {
         $red = new SrgbColor(1.0, 0.0, 0.0);
-        // Use an explicit position that is NOT where it would be auto-distributed
-        // to properly test that it gets overridden.
+        // Explicit position that differs from where an even distribution would put it.
         $explicitStop = new GradientStop(new SrgbColor(0.0, 1.0, 0.0), 0.4);
 
         $g = Gradient::linear(90.0, $red, $explicitStop, '#0000ff');
         $stops = $g->getStops();
 
-        // When mixing implicit and explicit stops, all stops are evenly re-distributed,
-        // and pre-existing explicit positions are discarded.
         $this->assertCount(3, $stops);
-        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12); // Was implicit, becomes 0.0
-        $this->assertEqualsWithDelta(0.5, $stops[1]->position, 1e-12); // Was explicit 0.4, becomes 0.5
-        $this->assertEqualsWithDelta(1.0, $stops[2]->position, 1e-12); // Was implicit, becomes 1.0
+        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.4, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(1.0, $stops[2]->position, 1e-12);
+    }
+
+    public function testLinearKeepsExplicitPositionMixedWithPlainColor(): void
+    {
+        $g = Gradient::linear(180.0, '#000000', new GradientStop(Color::parse('#ff0000'), 0.9));
+        $stops = $g->getStops();
+
+        $this->assertCount(2, $stops);
+        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.9, $stops[1]->position, 1e-12);
+        $this->assertStringContainsString('rgb(255 0 0) 90%', $g->toCss());
+    }
+
+    public function testLinearSpreadsPlainColorBetweenExplicitStops(): void
+    {
+        $g = Gradient::linear(
+            180.0,
+            new GradientStop(Color::parse('#ff0000'), 0.2),
+            '#000000',
+            new GradientStop(Color::parse('#00ff00'), 0.8),
+        );
+        $stops = $g->getStops();
+
+        $this->assertCount(3, $stops);
+        $this->assertEqualsWithDelta(0.2, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.5, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.8, $stops[2]->position, 1e-12);
+    }
+
+    public function testLinearSpreadsConsecutivePlainColorsBetweenExplicitStops(): void
+    {
+        $g = Gradient::linear(
+            180.0,
+            new GradientStop(Color::parse('#ff0000'), 0.2),
+            '#000000',
+            '#888888',
+            new GradientStop(Color::parse('#00ff00'), 0.8),
+        );
+        $stops = $g->getStops();
+
+        $this->assertCount(4, $stops);
+        $this->assertEqualsWithDelta(0.2, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.4, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.6, $stops[2]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.8, $stops[3]->position, 1e-12);
+    }
+
+    public function testLinearSpreadsLeadingPlainColorsFromZero(): void
+    {
+        $g = Gradient::linear(180.0, '#000000', '#888888', new GradientStop(Color::parse('#00ff00'), 0.9));
+        $stops = $g->getStops();
+
+        $this->assertCount(3, $stops);
+        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.45, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.9, $stops[2]->position, 1e-12);
+    }
+
+    public function testLinearSpreadsTrailingPlainColorsUpToOne(): void
+    {
+        $g = Gradient::linear(180.0, new GradientStop(Color::parse('#ff0000'), 0.1), '#000000', '#888888');
+        $stops = $g->getStops();
+
+        $this->assertCount(3, $stops);
+        $this->assertEqualsWithDelta(0.1, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.55, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(1.0, $stops[2]->position, 1e-12);
+    }
+
+    public function testLinearWithoutExplicitPositionDistributesEvenly(): void
+    {
+        $g = Gradient::linear(180.0, '#000000', '#888888', '#ffffff');
+        $stops = $g->getStops();
+
+        $this->assertCount(3, $stops);
+        $this->assertEqualsWithDelta(0.0, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.5, $stops[1]->position, 1e-12);
+        $this->assertEqualsWithDelta(1.0, $stops[2]->position, 1e-12);
+    }
+
+    public function testLinearWithOnlyExplicitStopsKeepsEveryPosition(): void
+    {
+        $g = Gradient::linear(
+            180.0,
+            new GradientStop(Color::parse('#ff0000'), 0.3),
+            new GradientStop(Color::parse('#00ff00'), 0.7),
+        );
+        $stops = $g->getStops();
+
+        $this->assertCount(2, $stops);
+        $this->assertEqualsWithDelta(0.3, $stops[0]->position, 1e-12);
+        $this->assertEqualsWithDelta(0.7, $stops[1]->position, 1e-12);
     }
 
     public function testConicWithNullValuesFilteredOut(): void
