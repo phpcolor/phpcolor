@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhpColor\Color;
 
+use PhpColor\Color\Exception\InvalidArgumentException;
 use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\Exception\ParseException;
 use PhpColor\Color\Space\ColorSpaces;
@@ -411,10 +412,14 @@ abstract readonly class AbstractColor implements \Stringable, ColorInterface
     public function withChannels(array $partial): static
     {
         $current = $this->getChannels();
-        foreach ($partial as $k => $v) {
-            if (\array_key_exists($k, $current)) {
-                $current[$k] = (float) $v;
+        foreach (array_keys($partial) as $k) {
+            if (!\array_key_exists($k, $current)) {
+                throw new InvalidArgumentException(\sprintf('Unknown channel "%s" for the "%s" color space, which exposes "%s". Convert to a space that carries this channel first, for example to(\'oklch\') to reach "h".', $k, static::getSpaceName(), implode('", "', array_keys($current))));
             }
+        }
+
+        foreach ($partial as $k => $v) {
+            $current[$k] = (float) $v;
         }
 
         return static::fromChannels($current, $this->getAlpha());

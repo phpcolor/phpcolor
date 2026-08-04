@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace PhpColor\Color\Tests;
 
 use PhpColor\Color\AbstractColor;
+use PhpColor\Color\CmykColor;
 use PhpColor\Color\Color;
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Exception\InvalidArgumentException;
 use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\Exception\ParseException;
 use PhpColor\Color\OklabColor;
@@ -259,6 +261,73 @@ final class AbstractColorTest extends TestCase
         $this->assertSame(0.5, $next->getGreen());
         $this->assertSame(0.3, $next->getBlue());
         $this->assertSame(0.4, $next->getAlpha());
+    }
+
+    public function testWithChannelsThrowsOnUnknownChannel(): void
+    {
+        $c = new SrgbColor(0.2, 0.4, 0.6);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown channel "h" for the "srgb" color space, which exposes "r", "g", "b".');
+
+        $c->withChannels(['h' => 210.0]);
+    }
+
+    public function testWithChannelThrowsOnUnknownChannelLikeWithChannels(): void
+    {
+        $c = new SrgbColor(0.2, 0.4, 0.6);
+
+        $shortcut = null;
+        $plural = null;
+
+        try {
+            $c->withChannel('h', 210.0);
+        } catch (InvalidArgumentException $e) {
+            $shortcut = $e->getMessage();
+        }
+
+        try {
+            $c->withChannels(['h' => 210.0]);
+        } catch (InvalidArgumentException $e) {
+            $plural = $e->getMessage();
+        }
+
+        $this->assertNotNull($shortcut);
+        $this->assertSame($plural, $shortcut);
+    }
+
+    public function testWithChannelsRejectsUnknownChannelWithoutApplyingValidOnes(): void
+    {
+        $c = new SrgbColor(0.1, 0.2, 0.3, 0.4);
+
+        try {
+            $c->withChannels(['g' => 0.5, 'h' => 210.0]);
+            $this->fail('Expected InvalidArgumentException for channel "h".');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('"h"', $e->getMessage());
+        }
+
+        $this->assertSame(['r' => 0.1, 'g' => 0.2, 'b' => 0.3], $c->getChannels());
+    }
+
+    public function testWithChannelsAcceptsChannelNamesOfEachSpace(): void
+    {
+        $srgb = (new SrgbColor(0.1, 0.2, 0.3))->withChannels(['r' => 0.9, 'b' => 0.4]);
+        $oklch = (new OklchColor(0.5, 0.1, 200.0))->withChannels(['l' => 0.6, 'h' => 210.0]);
+        $cmyk = (new CmykColor(0.1, 0.2, 0.3, 0.4))->withChannels(['c' => 0.8, 'k' => 0.5]);
+
+        $this->assertSame(['r' => 0.9, 'g' => 0.2, 'b' => 0.4], $srgb->getChannels());
+        $this->assertSame(['l' => 0.6, 'c' => 0.1, 'h' => 210.0], $oklch->getChannels());
+        $this->assertSame(['c' => 0.8, 'm' => 0.2, 'y' => 0.3, 'k' => 0.5], $cmyk->getChannels());
+    }
+
+    public function testWithChannelsRejectsChannelBorrowedFromAnotherSpace(): void
+    {
+        // "c" is chroma in Oklch and cyan in Cmyk, but sRGB has no such channel.
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown channel "c" for the "srgb" color space');
+
+        (new SrgbColor(0.2, 0.4, 0.6))->withChannel('c', 0.5);
     }
 
     public function testHueIsZeroForAchromaticColors(): void
