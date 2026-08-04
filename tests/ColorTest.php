@@ -567,6 +567,26 @@ final class ColorTest extends TestCase
         $this->assertEqualsWithDelta(1.0, $ratio, 0.01);
     }
 
+    public function testMixWithBothEndpointsTransparent(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 0)');
+        $blue = Color::parse('rgb(0 0 255 / 0)');
+
+        // A zero interpolated alpha leaves the channels undefined per CSS Color 4; this library
+        // falls back to plain interpolation, the limit of the premultiplied formula.
+        $oklab = Color::mix($red, $blue, 0.5, 'oklab');
+        $this->assertInstanceOf(OklabColor::class, $oklab);
+        $this->assertSame(0.0, $oklab->alpha);
+        $this->assertEqualsWithDelta(0.539984539499947, $oklab->l, 1e-12);
+        $this->assertEqualsWithDelta(0.096203038448605, $oklab->a, 1e-12);
+        $this->assertEqualsWithDelta(-0.092840924573820, $oklab->b, 1e-12);
+
+        $srgb = Color::mix($red, $blue, 0.5, 'srgb');
+        $this->assertInstanceOf(SrgbColor::class, $srgb);
+        $this->assertSame(0.0, $srgb->a);
+        $this->assertSame('#bc00bc', $srgb->toHex());
+    }
+
     public function testMixWithColorInterfaceSpace(): void
     {
         $red = Color::parse('#ff0000');
@@ -602,6 +622,45 @@ final class ColorTest extends TestCase
         $this->assertEqualsWithDelta(1.0, $srgb->b, 0.01);
     }
 
+    public function testMixWithOneTPreservesAlpha(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 0.8)');
+        $blue = Color::parse('rgb(0 0 255 / 0.2)');
+
+        // lerp() is not bit-exact at t=1, so alpha lands one ulp below 0.2 here.
+        $oklab = Color::mix($red, $blue, 1.0, 'oklab');
+        $this->assertInstanceOf(OklabColor::class, $oklab);
+        $this->assertEqualsWithDelta(0.2, $oklab->alpha, 1e-12);
+        $this->assertSame('#0000ff', $oklab->toSrgb()->toHex());
+
+        $srgb = Color::mix($red, $blue, 1.0, 'srgb');
+        $this->assertInstanceOf(SrgbColor::class, $srgb);
+        $this->assertEqualsWithDelta(0.2, $srgb->a, 1e-12);
+        $this->assertSame('#0000ff', $srgb->toHex());
+    }
+
+    public function testMixWithOpaqueEndpoints(): void
+    {
+        $red = Color::parse('rgb(255 0 0)');
+        $blue = Color::parse('rgb(0 0 255)');
+
+        $oklab = Color::mix($red, $blue, 0.5, 'oklab');
+        $this->assertInstanceOf(OklabColor::class, $oklab);
+        $this->assertSame(1.0, $oklab->alpha);
+        $this->assertEqualsWithDelta(0.539984539499947, $oklab->l, 1e-12);
+        $this->assertEqualsWithDelta(0.096203038448605, $oklab->a, 1e-12);
+        $this->assertEqualsWithDelta(-0.092840924573820, $oklab->b, 1e-12);
+        $this->assertSame('#8c53a2', $oklab->toSrgb()->toHex());
+
+        $srgb = Color::mix($red, $blue, 0.5, 'srgb');
+        $this->assertInstanceOf(SrgbColor::class, $srgb);
+        $this->assertSame(1.0, $srgb->a);
+        $this->assertEqualsWithDelta(0.735356983052449, $srgb->r, 1e-12);
+        $this->assertEqualsWithDelta(0.0, $srgb->g, 1e-12);
+        $this->assertEqualsWithDelta(0.735356983052449, $srgb->b, 1e-12);
+        $this->assertSame('#bc00bc', $srgb->toHex());
+    }
+
     public function testMixWithOverflowT(): void
     {
         $red = Color::parse('#ff0000');
@@ -611,6 +670,52 @@ final class ColorTest extends TestCase
         // t > 1 should clamp to 1
         $srgb = $result->toSrgb();
         $this->assertEqualsWithDelta(1.0, $srgb->b, 0.01);
+    }
+
+    public function testMixWithPartialAlphaOklab(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 0.8)');
+        $blue = Color::parse('rgb(0 0 255 / 0.2)');
+
+        $mixed = Color::mix($red, $blue, 0.5, 'oklab');
+
+        $this->assertInstanceOf(OklabColor::class, $mixed);
+        $this->assertSame(0.5, $mixed->alpha);
+        // Equal weights premultiplied reduce to the alpha-weighted average 0.8 * red + 0.2 * blue.
+        $this->assertEqualsWithDelta(0.592767032168710, $mixed->l, 1e-12);
+        $this->assertEqualsWithDelta(0.173399052019026, $mixed->a, 1e-12);
+        $this->assertEqualsWithDelta(0.038371409288913, $mixed->b, 1e-12);
+    }
+
+    public function testMixWithPartialAlphaSrgb(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 0.8)');
+        $blue = Color::parse('rgb(0 0 255 / 0.2)');
+
+        $mixed = Color::mix($red, $blue, 0.5, 'srgb');
+
+        $this->assertInstanceOf(SrgbColor::class, $mixed);
+        $this->assertSame(0.5, $mixed->a);
+        $this->assertEqualsWithDelta(0.906331753344059, $mixed->r, 1e-12);
+        $this->assertEqualsWithDelta(0.0, $mixed->g, 1e-12);
+        $this->assertEqualsWithDelta(0.484529204481707, $mixed->b, 1e-12);
+        $this->assertSame('#e7007c', $mixed->toHex());
+    }
+
+    public function testMixWithTransparentEndpointPreservesHue(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 1)');
+        $blue = Color::parse('rgb(0 0 255 / 0)');
+
+        $oklab = Color::mix($red, $blue, 0.5, 'oklab');
+        $this->assertInstanceOf(OklabColor::class, $oklab);
+        $this->assertSame(0.5, $oklab->alpha);
+        $this->assertSame('#ff0000', $oklab->toSrgb()->toHex());
+
+        $srgb = Color::mix($red, $blue, 0.5, 'srgb');
+        $this->assertInstanceOf(SrgbColor::class, $srgb);
+        $this->assertSame(0.5, $srgb->a);
+        $this->assertSame('#ff0000', $srgb->toHex());
     }
 
     public function testMixWithZeroT(): void
@@ -623,6 +728,22 @@ final class ColorTest extends TestCase
         $srgb = $result->toSrgb();
         $this->assertEqualsWithDelta(1.0, $srgb->r, 0.01);
         $this->assertEqualsWithDelta(0.0, $srgb->b, 0.01);
+    }
+
+    public function testMixWithZeroTPreservesAlpha(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 0.8)');
+        $blue = Color::parse('rgb(0 0 255 / 0.2)');
+
+        $oklab = Color::mix($red, $blue, 0.0, 'oklab');
+        $this->assertInstanceOf(OklabColor::class, $oklab);
+        $this->assertSame(0.8, $oklab->alpha);
+        $this->assertSame('#ff0000', $oklab->toSrgb()->toHex());
+
+        $srgb = Color::mix($red, $blue, 0.0, 'srgb');
+        $this->assertInstanceOf(SrgbColor::class, $srgb);
+        $this->assertSame(0.8, $srgb->a);
+        $this->assertSame('#ff0000', $srgb->toHex());
     }
 
     public function testParseColorFunctionEmptyParams(): void
