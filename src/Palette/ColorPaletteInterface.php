@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhpColor\Color\Palette;
 
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\Distance\ColorDistanceInterface;
 use PhpColor\Color\Exception\InvalidColorException;
 
 /**
@@ -46,11 +47,15 @@ interface ColorPaletteInterface extends \Countable, \IteratorAggregate
     /**
      * Find the color in the palette that is closest to a target color.
      *
-     * Uses perceptual color distance (CIEDE2000) to find the best match.
+     * By default, the match is the one with the smallest Euclidean distance in
+     * the Oklab color space.
+     *
+     * @param ColorDistanceInterface|null $metric Distance algorithm to compare colors with,
+     *                                            or null for the default Oklab Euclidean distance
      *
      * @throws InvalidColorException If the palette is empty
      */
-    public function closest(ColorInterface $color): ColorInterface;
+    public function closest(ColorInterface $color, ?ColorDistanceInterface $metric = null): ColorInterface;
 
     /**
      * Get the number of colors in the palette.
