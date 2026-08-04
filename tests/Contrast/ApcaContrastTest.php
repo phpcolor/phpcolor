@@ -15,131 +15,125 @@ namespace PhpColor\Color\Tests\Contrast;
 
 use PhpColor\Color\Color;
 use PhpColor\Color\Contrast\ApcaContrast;
+use PhpColor\Color\SrgbColor;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Reference vectors are independently derived from the canonical APCA
+ * 0.0.98G "G-4g" algorithm (Myndex apca-w3, Beta 0.1.9, 2022-07-03), not
+ * from this codebase, so a match proves conformance rather than
+ * self-consistency.
+ */
 #[CoversClass(ApcaContrast::class)]
 final class ApcaContrastTest extends TestCase
 {
-    public function testPolaritySigns(): void
-    {
-        $white = Color::white();
-        $black = Color::black();
+    private const float TOLERANCE = 0.01;
 
-        $normal = ApcaContrast::lc($black, $white);   // dark on light
-        $reverse = ApcaContrast::lc($white, $black);  // light on dark
+    public function testRegressionVectorGray777OnBlack(): void
+    {
+        // Canonical APCA 0.0.98G returns approximately -30.56 for this pair;
+        // background Y is 0, so this also exercises the black soft clamp.
+        $lc = ApcaContrast::lc(Color::parse('#777777'), Color::black());
+
+        $this->assertEqualsWithDelta(-30.561149, $lc, self::TOLERANCE);
+    }
+
+    public function testCanonicalDarkTextOnLightBackground(): void
+    {
+        $lc = ApcaContrast::lc(Color::black(), Color::white());
+
+        $this->assertEqualsWithDelta(106.040673, $lc, self::TOLERANCE);
+    }
+
+    public function testCanonicalLightTextOnDarkBackground(): void
+    {
+        $lc = ApcaContrast::lc(Color::white(), Color::black());
+
+        $this->assertEqualsWithDelta(-107.884733, $lc, self::TOLERANCE);
+    }
+
+    public function testReferenceMatrixVector(): void
+    {
+        $lc = ApcaContrast::lc(Color::parse('#3b82f6'), Color::parse('#1e293b'));
+
+        $this->assertEqualsWithDelta(-34.174740, $lc, self::TOLERANCE);
+    }
+
+    public function testPolarityMagnitudeIsNotSymmetric(): void
+    {
+        // normBG/normTXT (0.56/0.57) differ from revBG/revTXT (0.65/0.62), so
+        // reverse polarity (light on dark) is slightly stronger in magnitude
+        // than normal polarity for the same extreme pair. A symmetric result
+        // would indicate the polarity-specific exponents are missing.
+        $normal = ApcaContrast::lc(Color::black(), Color::white());
+        $reverse = ApcaContrast::lc(Color::white(), Color::black());
 
         $this->assertGreaterThan(0.0, $normal);
         $this->assertLessThan(0.0, $reverse);
-        $this->assertGreaterThan(abs($reverse), $normal); // preferred polarity usually higher magnitude
+        $this->assertGreaterThan($normal, abs($reverse));
     }
 
     public function testZeroForIdenticalColors(): void
     {
         $red = Color::red();
+
         $this->assertSame(0.0, ApcaContrast::lc($red, $red));
     }
 
-    public function testNormalPolarityReturnsPositiveNonZero(): void
+    public function testLowContrastIsClippedToZero(): void
     {
-        $fg = Color::black();
-        $bg = Color::white();
-        $lc = ApcaContrast::lc($fg, $bg);
-        $this->assertGreaterThan(0.0, $lc); // exercises return max(0.0, $Lc)
-    }
+        $lc = ApcaContrast::lc(Color::parse('#808080'), Color::parse('#858585'));
 
-    public function testReversePolarityReturnsNegativeNonZero(): void
-    {
-        $fg = Color::white();
-        $bg = Color::black();
-        $lc = ApcaContrast::lc($fg, $bg);
-        $this->assertLessThan(0.0, $lc); // exercises return min(0.0, $Lc)
-    }
-
-    public function testNearZeroClampNormalPolarity(): void
-    {
-        // Find a delta where lc > 0, then shrink until clamp returns 0.0
-        $fg = Color::rgb(0.50, 0.50, 0.50);
-        $delta = 1e-3;
-        $bg = Color::rgb(0.50 + $delta, 0.50 + $delta, 0.50 + $delta);
-        $lcPrev = ApcaContrast::lc($fg, $bg);
-        // Ensure starting point is non-zero and positive (normal polarity)
-        if (0.0 === $lcPrev) {
-            $delta = 1e-2; // back off if needed
-            $bg = Color::rgb(0.50 + $delta, 0.50 + $delta, 0.50 + $delta);
-            $lcPrev = ApcaContrast::lc($fg, $bg);
-        }
-        $this->assertGreaterThan(0.0, $lcPrev);
-        // Shrink delta until we hit clamp
-        $lc = $lcPrev;
-        for ($i = 0; $i < 24 && 0.0 !== $lc; ++$i) {
-            $delta *= 0.1;
-            $bg = Color::rgb(0.50 + $delta, 0.50 + $delta, 0.50 + $delta);
-            $lc = ApcaContrast::lc($fg, $bg);
-        }
         $this->assertSame(0.0, $lc);
     }
 
-    public function testNearZeroClampReversePolarity(): void
+    public function testModerateContrastIsNotClipped(): void
     {
-        // Start with non-zero reverse polarity then shrink to clamp 0.0
-        $bg = Color::rgb(0.50, 0.50, 0.50);
-        $delta = 1e-3;
-        $fg = Color::rgb(0.50 + $delta, 0.50 + $delta, 0.50 + $delta);
-        $lcPrev = ApcaContrast::lc($fg, $bg);
-        if (0.0 === $lcPrev) {
-            $delta = 1e-2;
-            $fg = Color::rgb(0.50 + $delta, 0.50 + $delta, 0.50 + $delta);
-            $lcPrev = ApcaContrast::lc($fg, $bg);
-        }
-        $this->assertLessThan(0.0, $lcPrev); // reverse polarity should be negative initially
-        $lc = $lcPrev;
-        for ($i = 0; $i < 24 && 0.0 !== $lc; ++$i) {
-            $delta *= 0.1;
-            $fg = Color::rgb(0.50 + $delta, 0.50 + $delta, 0.50 + $delta);
-            $lc = ApcaContrast::lc($fg, $bg);
-        }
-        $this->assertSame(0.0, $lc);
-    }
+        $lc = ApcaContrast::lc(Color::parse('#707070'), Color::parse('#909090'));
 
-    public function testSrgbToLinearThresholdBranch(): void
-    {
-        // Exercise srgbToLinear low-branch exactly at the 0.04045 threshold
-        $v = 0.04045; // boundary where branch changes
-        $fg = Color::rgb($v, $v, $v);
-        $bg = Color::rgb($v, $v, $v);
-
-        // Identical colors: lc should early-return 0.0; importantly it passes through relLumi and srgbToLinear
-        $this->assertSame(0.0, ApcaContrast::lc($fg, $bg));
-
-        // Nudge just above threshold to exercise the other srgbToLinear branch within same test run
-        $fg2 = Color::rgb($v + 1e-4, $v + 1e-4, $v + 1e-4);
-        $lc = ApcaContrast::lc($fg2, $bg);
-        $this->assertIsFloat($lc);
+        $this->assertEqualsWithDelta(13.197298, $lc, self::TOLERANCE);
     }
 
     public function testRelLumiChannelWeightsAffectContrastOrdering(): void
     {
-        // Use values below 0.04045 to stay in the linear branch: linear = v/12.92
-        // Base gray background
-        $bg = Color::rgb(0.10, 0.10, 0.10);
+        // A single-channel swing must be full (0 to 1) to clear the
+        // low-contrast clip; a subtle per-channel delta is clipped to zero
+        // by design and would not exercise the weighting at all.
+        $bg = Color::black();
 
-        // Foregrounds differ by +0.01 in a single channel
-        $fgR = Color::rgb(0.11, 0.10, 0.10);
-        $fgG = Color::rgb(0.10, 0.11, 0.10);
-        $fgB = Color::rgb(0.10, 0.10, 0.11);
+        $lcR = ApcaContrast::lc(Color::rgb(1.0, 0.0, 0.0), $bg);
+        $lcG = ApcaContrast::lc(Color::rgb(0.0, 1.0, 0.0), $bg);
+        $lcB = ApcaContrast::lc(Color::rgb(0.0, 0.0, 1.0), $bg);
 
-        $lcR = ApcaContrast::lc($fgR, $bg);
-        $lcG = ApcaContrast::lc($fgG, $bg);
-        $lcB = ApcaContrast::lc($fgB, $bg);
-
-        // Since only foreground is brighter (reverse polarity), results are <= 0; compare magnitudes
         $this->assertLessThan(0.0, $lcR);
         $this->assertLessThan(0.0, $lcG);
         $this->assertLessThan(0.0, $lcB);
 
-        // Green should contribute the most (0.7152), then Red (0.2126), then Blue (0.0722)
+        // Green contributes most (0.7151522), then red (0.2126729), then blue (0.0721750).
         $this->assertGreaterThan(abs($lcR), abs($lcG));
         $this->assertGreaterThan(abs($lcB), abs($lcR));
+    }
+
+    public function testOutOfGamutComponentReturnsZero(): void
+    {
+        $fg = new SrgbColor(1.5, 1.5, 1.5);
+
+        $this->assertSame(0.0, ApcaContrast::lc($fg, Color::black()));
+    }
+
+    public function testNegativeComponentReturnsZero(): void
+    {
+        $fg = new SrgbColor(-0.5, -0.5, -0.5);
+
+        $this->assertSame(0.0, ApcaContrast::lc($fg, Color::white()));
+    }
+
+    public function testAlphaIsIgnoredLikeWcagContrast(): void
+    {
+        $opaque = ApcaContrast::lc(Color::black(), Color::white());
+        $transparent = ApcaContrast::lc(Color::black()->withAlpha(0.2), Color::white());
+
+        $this->assertSame($opaque, $transparent);
     }
 }
