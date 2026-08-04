@@ -140,7 +140,9 @@ final class Color
     /**
      * Mix two colors together in a specified color space.
      *
-     * Supports mixing in sRGB (linear) and Oklab spaces.
+     * Supports mixing in sRGB (linear) and Oklab spaces. Color channels are interpolated with
+     * premultiplied alpha, as specified by CSS Color 4, so a transparent endpoint does not tint
+     * the result.
      *
      * @throws InvalidColorException
      */
@@ -167,16 +169,11 @@ final class Color
                 self::srgbToLinear($rb->b),
             ];
 
-            $lr = [
-                self::lerp($la[0], $lb[0], $t),
-                self::lerp($la[1], $lb[1], $t),
-                self::lerp($la[2], $lb[2], $t),
-            ];
+            [$lr0, $lr1, $lr2, $a2] = self::lerpPremultiplied($la, $ra->a, $lb, $rb->a, $t);
 
-            $r = self::linearToSrgb($lr[0]);
-            $g = self::linearToSrgb($lr[1]);
-            $b2 = self::linearToSrgb($lr[2]);
-            $a2 = self::lerp($ra->a, $rb->a, $t);
+            $r = self::linearToSrgb($lr0);
+            $g = self::linearToSrgb($lr1);
+            $b2 = self::linearToSrgb($lr2);
 
             return new SrgbColor($r, $g, $b2, $a2);
         }
@@ -188,10 +185,13 @@ final class Color
             $ra = $oa instanceof OklabColor ? $oa : OklabColor::fromSrgb($oa->toSrgb());
             $rb = $ob instanceof OklabColor ? $ob : OklabColor::fromSrgb($ob->toSrgb());
 
-            $l = self::lerp($ra->l, $rb->l, $t);
-            $aVal = self::lerp($ra->a, $rb->a, $t);
-            $bVal = self::lerp($ra->b, $rb->b, $t);
-            $alpha = self::lerp($ra->alpha, $rb->alpha, $t);
+            [$l, $aVal, $bVal, $alpha] = self::lerpPremultiplied(
+                [$ra->l, $ra->a, $ra->b],
+                $ra->alpha,
+                [$rb->l, $rb->a, $rb->b],
+                $rb->alpha,
+                $t,
+            );
 
             return new OklabColor($l, $aVal, $bVal, $alpha);
         }
@@ -331,6 +331,39 @@ final class Color
     private static function lerp(float $a, float $b, float $t): float
     {
         return $a + ($b - $a) * $t;
+    }
+
+    /**
+     * Interpolate three color channels and alpha using premultiplied alpha.
+     *
+     * Each channel is weighted by its own alpha before interpolation, then divided by the
+     * interpolated alpha. When that alpha is zero the un-premultiplied channels are undefined
+     * per CSS Color 4, so the plain channel interpolation is returned instead.
+     *
+     * @param array{float, float, float} $ca
+     * @param array{float, float, float} $cb
+     *
+     * @return array{float, float, float, float} The interpolated channels followed by alpha
+     */
+    private static function lerpPremultiplied(array $ca, float $aa, array $cb, float $ab, float $t): array
+    {
+        $alpha = self::lerp($aa, $ab, $t);
+
+        if (0.0 >= $alpha) {
+            return [
+                self::lerp($ca[0], $cb[0], $t),
+                self::lerp($ca[1], $cb[1], $t),
+                self::lerp($ca[2], $cb[2], $t),
+                $alpha,
+            ];
+        }
+
+        return [
+            self::lerp($ca[0] * $aa, $cb[0] * $ab, $t) / $alpha,
+            self::lerp($ca[1] * $aa, $cb[1] * $ab, $t) / $alpha,
+            self::lerp($ca[2] * $aa, $cb[2] * $ab, $t) / $alpha,
+            $alpha,
+        ];
     }
 
     private static function linearToSrgb(float $c): float
