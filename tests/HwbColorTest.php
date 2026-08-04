@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhpColor\Color\Tests;
 
+use PhpColor\Color\Color;
 use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\Exception\ParseException;
 use PhpColor\Color\HwbColor;
@@ -246,6 +247,25 @@ final class HwbColorTest extends TestCase
         $this->assertStringContainsString('200', $cssOklab);
         $this->assertStringContainsString('40%', $cssOklab);
         $this->assertStringContainsString('10%', $cssOklab);
+    }
+
+    public function testToCssOmitsAlphaWhenOpaque(): void
+    {
+        $this->assertSame('hwb(210 20% 30%)', (new HwbColor(210, 0.2, 0.3))->toCss());
+        $this->assertSame('hwb(210 20% 30%)', (new HwbColor(210, 0.2, 0.3, 1.0))->toCss());
+    }
+
+    public function testToCssPreservesAlphaFromConversion(): void
+    {
+        $hwb = Color::parse('rgb(0 0 255 / 0.25)')->to('hwb');
+
+        $this->assertSame('hwb(240 0% 0% / 0.25)', $hwb->toCss());
+    }
+
+    public function testToCssWithAlpha(): void
+    {
+        $this->assertSame('hwb(210 20% 30% / 0.5)', HwbColor::parse('hwb(210 20% 30% / 0.5)')->toCss());
+        $this->assertSame('hwb(90 10% 20% / 0)', (new HwbColor(90, 0.1, 0.2, 0.0))->toCss());
     }
 
     public function testToCssWithExplicitHwbSpace(): void
