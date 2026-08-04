@@ -197,30 +197,34 @@ final class GradientBuilder
     /**
      * Add multiple color stops with automatic position distribution.
      *
-     * Accepts colors, color strings, or GradientStop objects. If positions are not specified
-     * (i.e., colors/strings), they will be auto-distributed evenly across the gradient.
+     * Accepts colors, color strings, or GradientStop objects. GradientStop objects keep their
+     * position, while colors/strings are spread evenly between the surrounding positions.
      *
      * @param ColorInterface|GradientStop|string ...$stops Color stops to add
      */
     public function stops(ColorInterface|GradientStop|string ...$stops): self
     {
-        $colorOnlyStops = [];
+        $colors = [];
+        $positions = [];
+
+        foreach ($this->stops as $stop) {
+            $colors[] = $stop->color;
+            $positions[] = $stop->position;
+        }
 
         foreach ($stops as $stop) {
             if ($stop instanceof GradientStop) {
-                $this->stops[] = $stop;
+                $colors[] = $stop->color;
+                $positions[] = $stop->position;
             } else {
-                $color = \is_string($stop) ? Color::parse($stop) : $stop;
-                $colorOnlyStops[] = $color;
+                $colors[] = \is_string($stop) ? Color::parse($stop) : $stop;
+                $positions[] = null;
             }
         }
 
-        if ([] !== $colorOnlyStops) {
-            $count = \count($colorOnlyStops);
-            foreach ($colorOnlyStops as $i => $color) {
-                $position = $count > 1 ? $i / ($count - 1) : 0.5;
-                $this->stops[] = new GradientStop($color, $position);
-            }
+        $this->stops = [];
+        foreach (Gradient::distributePositions($positions) as $i => $position) {
+            $this->stops[] = new GradientStop($colors[$i], $position);
         }
 
         return $this;
