@@ -35,6 +35,9 @@ final readonly class Rec2020Color extends AbstractColor
 
     /**
      * Create a new Rec.2020 color from red, green, blue, and alpha components.
+     *
+     * Each channel is clamped to [0, 1]. CSS Color 4 permits out-of-range coordinates in
+     * color(), so a color parsed with such coordinates does not round trip unchanged.
      */
     public function __construct(
         float $r,

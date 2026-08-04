@@ -36,6 +36,18 @@ Advanced spaces that can represent more vivid and saturated colors than standard
 | **Adobe RGB** | Developed for professional printing and photography (A98). | [Read more](./space/a98-rgb.md) |
 | **ProPhoto** | An extremely wide-gamut space covering 90%+ of visible colors. | [Read more](./space/prophoto-rgb.md) |
 
+These four constructors clamp each channel to `[0, 1]`:
+
+```php
+new DisplayP3Color(1.2, 0.0, 0.5);       // stored as 1.0, 0.0, 0.5
+Color::parse('color(display-p3 1.2 0 0.5)')->toCss();
+// color(display-p3 1 0 0.5)
+```
+
+CSS Color 4 allows coordinates outside `[0, 1]` in `color()`, and defers gamut mapping to the used value. A color parsed with out-of-range coordinates therefore does not round trip back to its original notation.
+
+`SrgbColor` and `XyzColor` do not clamp, so out-of-sRGB intermediate values survive a conversion chain.
+
 ## Other Spaces
 
 | Space | Description | Documentation |

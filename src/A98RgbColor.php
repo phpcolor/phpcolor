@@ -34,6 +34,9 @@ final readonly class A98RgbColor extends AbstractColor
 
     /**
      * Create a new A98-RGB color from red, green, blue, and alpha components.
+     *
+     * Each channel is clamped to [0, 1]. CSS Color 4 permits out-of-range coordinates in
+     * color(), so a color parsed with such coordinates does not round trip unchanged.
      */
     public function __construct(
         float $r,
