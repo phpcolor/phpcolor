@@ -543,6 +543,13 @@ interface ColorInterface extends \Stringable
     public function toHex(bool $withAlpha = false): string;
 
     /**
+     * Convert to the Oklch color space.
+     *
+     * @return OklchColor The color converted to Oklch space
+     */
+    public function toOklch(): OklchColor;
+
+    /**
      * Convert to sRGB color space.
      *
      * Convenience method for converting to sRGB, the most common color space for web use.

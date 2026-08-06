@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhpColor\Color\Tests\Colorimetry;
 
 use PhpColor\Color\ColorInterface;
+use PhpColor\Color\OklchColor;
 use PhpColor\Color\SrgbColor;
 
 /**
@@ -82,6 +83,11 @@ final class StubColor implements \Stringable, ColorInterface
         }
 
         return $this; // not used in these tests
+    }
+
+    public function toOklch(): OklchColor
+    {
+        return OklchColor::fromSrgb($this->toSrgb());
     }
 
     public function toSrgb(): SrgbColor
