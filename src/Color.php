@@ -140,7 +140,7 @@ final class Color
     /**
      * Mix two colors together in a specified color space.
      *
-     * Supports mixing in sRGB (linear) and Oklab spaces. Color channels are interpolated with
+     * Supports mixing in sRGB, linear sRGB and Oklab spaces. Color channels are interpolated with
      * premultiplied alpha, as specified by CSS Color 4, so a transparent endpoint does not tint
      * the result.
      *
@@ -155,6 +155,21 @@ final class Color
 
         $t = max(0.0, min(1.0, $t));
         if ($space instanceof SrgbColor || 'srgb' === $space) {
+            $ra = $a->toSrgb();
+            $rb = $b->toSrgb();
+
+            [$r, $g, $b2, $a2] = self::lerpPremultiplied(
+                [$ra->r, $ra->g, $ra->b],
+                $ra->a,
+                [$rb->r, $rb->g, $rb->b],
+                $rb->a,
+                $t,
+            );
+
+            return new SrgbColor($r, $g, $b2, $a2);
+        }
+
+        if ($space instanceof LinearSrgbColor || 'srgb-linear' === $space) {
             $ra = $a->toSrgb();
             $rb = $b->toSrgb();
 

@@ -104,6 +104,16 @@ final class RadialGradientTest extends TestCase
             new GradientStop(Color::parse('#0000ff'), 1.0),
         ], InterpolationSpace::Srgb);
 
+        $this->assertSame('radial-gradient(in srgb, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
+    }
+
+    public function testToCssWithSrgbLinearInterpolationSpace(): void
+    {
+        $gradient = new RadialGradient('ellipse', 'farthest-corner', 'center', [
+            new GradientStop(Color::parse('#ff0000'), 0.0),
+            new GradientStop(Color::parse('#0000ff'), 1.0),
+        ], InterpolationSpace::SrgbLinear);
+
         $this->assertSame('radial-gradient(in srgb-linear, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
     }
 

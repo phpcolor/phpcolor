@@ -104,6 +104,6 @@ class FunctionsTest extends TestCase
     public function testMix(): void
     {
         $mixed = mix('red', 'blue', 0.5, 'srgb');
-        self::assertSame('rgb(188 0 188)', (string) $mixed);
+        self::assertSame('rgb(128 0 128)', (string) $mixed);
     }
 }

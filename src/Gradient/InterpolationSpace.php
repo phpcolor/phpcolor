@@ -27,4 +27,9 @@ enum InterpolationSpace: string
      * sRGB color space.
      */
     case Srgb = 'srgb';
+
+    /**
+     * Linear-light sRGB color space.
+     */
+    case SrgbLinear = 'srgb-linear';
 }

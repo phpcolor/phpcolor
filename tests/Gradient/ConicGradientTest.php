@@ -135,6 +135,16 @@ final class ConicGradientTest extends TestCase
             new GradientStop(Color::parse('#0000ff'), 1.0),
         ], InterpolationSpace::Srgb);
 
+        $this->assertSame('conic-gradient(in srgb, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
+    }
+
+    public function testToCssWithSrgbLinearInterpolationSpace(): void
+    {
+        $gradient = new ConicGradient(0.0, 'center', [
+            new GradientStop(Color::parse('#ff0000'), 0.0),
+            new GradientStop(Color::parse('#0000ff'), 1.0),
+        ], InterpolationSpace::SrgbLinear);
+
         $this->assertSame('conic-gradient(in srgb-linear, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
     }
 

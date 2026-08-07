@@ -22,6 +22,7 @@ use PhpColor\Color\Exception\ParseException;
 use PhpColor\Color\HwbColor;
 use PhpColor\Color\LabColor;
 use PhpColor\Color\LchColor;
+use PhpColor\Color\LinearSrgbColor;
 use PhpColor\Color\OklabColor;
 use PhpColor\Color\OklchColor;
 use PhpColor\Color\ProPhotoColor;
@@ -82,6 +83,30 @@ final class ColorTest extends TestCase
         $this->assertSame('#ff0000', strtolower($c->toHex()));
     }
 
+    public function testMixMidpointDependsOnSpace(): void
+    {
+        $black = Color::parse('#000000');
+        $white = Color::parse('#ffffff');
+
+        $this->assertSame('#808080', Color::mix($black, $white, 0.5, 'srgb')->toSrgb()->toHex());
+        $this->assertSame('#bcbcbc', Color::mix($black, $white, 0.5, 'srgb-linear')->toSrgb()->toHex());
+        $this->assertSame('#636363', Color::mix($black, $white, 0.5, 'oklab')->toSrgb()->toHex());
+    }
+
+    public function testMixMidpointDependsOnSpaceGivenAsColorInstance(): void
+    {
+        $black = Color::parse('#000000');
+        $white = Color::parse('#ffffff');
+
+        $srgb = Color::mix($black, $white, 0.5, new SrgbColor(0.0, 0.0, 0.0));
+        $this->assertInstanceOf(SrgbColor::class, $srgb);
+        $this->assertSame('#808080', $srgb->toHex());
+
+        $srgbLinear = Color::mix($black, $white, 0.5, new LinearSrgbColor(0.0, 0.0, 0.0));
+        $this->assertInstanceOf(SrgbColor::class, $srgbLinear);
+        $this->assertSame('#bcbcbc', $srgbLinear->toHex());
+    }
+
     public function testMixOklab(): void
     {
         $a = Color::parse('rgb(255 0 0)');
@@ -116,6 +141,29 @@ final class ColorTest extends TestCase
         // Roughly purple
         $hex = strtolower($m->toHex());
         $this->assertStringStartsWith('#', $hex);
+    }
+
+    public function testMixSrgbKeepsHueOfOpaqueEndpointWhenOtherIsTransparent(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 1)');
+        $blue = Color::parse('rgb(0 0 255 / 0)');
+
+        $m = Color::mix($red, $blue, 0.5, 'srgb');
+
+        $this->assertInstanceOf(SrgbColor::class, $m);
+        $this->assertSame(0.5, $m->a);
+        $this->assertSame('#ff0000', $m->toHex());
+    }
+
+    public function testMixSrgbLinear(): void
+    {
+        $a = Color::parse('rgb(255 0 0)');
+        $b = Color::parse('rgb(0 0 255)');
+
+        $m = Color::mix($a, $b, 0.5, 'srgb-linear');
+
+        $this->assertInstanceOf(SrgbColor::class, $m);
+        $this->assertSame('#bc00bc', $m->toHex());
     }
 
     public function testMixUnsupportedSpace(): void
@@ -584,7 +632,12 @@ final class ColorTest extends TestCase
         $srgb = Color::mix($red, $blue, 0.5, 'srgb');
         $this->assertInstanceOf(SrgbColor::class, $srgb);
         $this->assertSame(0.0, $srgb->a);
-        $this->assertSame('#bc00bc', $srgb->toHex());
+        $this->assertSame('#800080', $srgb->toHex());
+
+        $srgbLinear = Color::mix($red, $blue, 0.5, 'srgb-linear');
+        $this->assertInstanceOf(SrgbColor::class, $srgbLinear);
+        $this->assertSame(0.0, $srgbLinear->a);
+        $this->assertSame('#bc00bc', $srgbLinear->toHex());
     }
 
     public function testMixWithColorInterfaceSpace(): void
@@ -655,10 +708,18 @@ final class ColorTest extends TestCase
         $srgb = Color::mix($red, $blue, 0.5, 'srgb');
         $this->assertInstanceOf(SrgbColor::class, $srgb);
         $this->assertSame(1.0, $srgb->a);
-        $this->assertEqualsWithDelta(0.735356983052449, $srgb->r, 1e-12);
+        $this->assertEqualsWithDelta(0.5, $srgb->r, 1e-12);
         $this->assertEqualsWithDelta(0.0, $srgb->g, 1e-12);
-        $this->assertEqualsWithDelta(0.735356983052449, $srgb->b, 1e-12);
-        $this->assertSame('#bc00bc', $srgb->toHex());
+        $this->assertEqualsWithDelta(0.5, $srgb->b, 1e-12);
+        $this->assertSame('#800080', $srgb->toHex());
+
+        $srgbLinear = Color::mix($red, $blue, 0.5, 'srgb-linear');
+        $this->assertInstanceOf(SrgbColor::class, $srgbLinear);
+        $this->assertSame(1.0, $srgbLinear->a);
+        $this->assertEqualsWithDelta(0.735356983052449, $srgbLinear->r, 1e-12);
+        $this->assertEqualsWithDelta(0.0, $srgbLinear->g, 1e-12);
+        $this->assertEqualsWithDelta(0.735356983052449, $srgbLinear->b, 1e-12);
+        $this->assertSame('#bc00bc', $srgbLinear->toHex());
     }
 
     public function testMixWithOverflowT(): void
@@ -693,6 +754,21 @@ final class ColorTest extends TestCase
         $blue = Color::parse('rgb(0 0 255 / 0.2)');
 
         $mixed = Color::mix($red, $blue, 0.5, 'srgb');
+
+        $this->assertInstanceOf(SrgbColor::class, $mixed);
+        $this->assertSame(0.5, $mixed->a);
+        $this->assertEqualsWithDelta(0.8, $mixed->r, 1e-12);
+        $this->assertEqualsWithDelta(0.0, $mixed->g, 1e-12);
+        $this->assertEqualsWithDelta(0.2, $mixed->b, 1e-12);
+        $this->assertSame('#cc0033', $mixed->toHex());
+    }
+
+    public function testMixWithPartialAlphaSrgbLinear(): void
+    {
+        $red = Color::parse('rgb(255 0 0 / 0.8)');
+        $blue = Color::parse('rgb(0 0 255 / 0.2)');
+
+        $mixed = Color::mix($red, $blue, 0.5, 'srgb-linear');
 
         $this->assertInstanceOf(SrgbColor::class, $mixed);
         $this->assertSame(0.5, $mixed->a);
