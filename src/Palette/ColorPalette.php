@@ -251,7 +251,7 @@ final readonly class ColorPalette implements ColorPaletteInterface
             }
         }
 
-        return new self($colors, $this->isNamed);
+        return new static($this->isNamed ? $colors : array_values($colors), $this->isNamed);
     }
 
     public function get(int|string $key): ColorInterface
@@ -280,7 +280,7 @@ final readonly class ColorPalette implements ColorPaletteInterface
             $colors[$key] = $fn($color);
         }
 
-        return new self($colors, $this->isNamed);
+        return new static($colors, $this->isNamed);
     }
 
     public function merge(ColorPaletteInterface $other): static
@@ -326,7 +326,7 @@ final readonly class ColorPalette implements ColorPaletteInterface
             throw new InvalidColorException('Cannot slice a named palette.');
         }
 
-        return new self(\array_slice($this->colors, $offset, $length, true), false);
+        return new static(\array_slice($this->colors, $offset, $length), false);
     }
 
     public function to(string $space): static

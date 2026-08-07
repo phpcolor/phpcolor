@@ -309,6 +309,27 @@ final class ColorPaletteTest extends TestCase
         $this->assertSame(3, $filtered->count());
     }
 
+    public function testFilterPreservesNamedKeys(): void
+    {
+        $palette = ColorPalette::fromHex(['red' => '#ff0000', 'green' => '#00ff00', 'blue' => '#0000ff']);
+        $filtered = $palette->filter(static fn (ColorInterface $c): bool => '#00ff00' !== $c->toHex());
+
+        $this->assertTrue($filtered->isNamed());
+        $this->assertSame(['red', 'blue'], array_keys($filtered->all()));
+        $this->assertSame('#0000ff', $filtered->get('blue')->toHex());
+    }
+
+    public function testFilterReindexesScaleKeys(): void
+    {
+        $palette = ColorPalette::fromHex(['#ff0000', '#00ff00', '#0000ff']);
+        $filtered = $palette->filter(static fn (ColorInterface $c): bool => '#ff0000' !== $c->toHex());
+
+        $this->assertFalse($filtered->isNamed());
+        $this->assertSame([0, 1], array_keys($filtered->all()));
+        $this->assertSame('#00ff00', $filtered->get(0)->toHex());
+        $this->assertSame('#0000ff', $filtered->get(1)->toHex());
+    }
+
     public function testFilterRemovesAllColors(): void
     {
         $palette = ColorPalette::fromHex(['#ff0000', '#00ff00', '#0000ff']);
@@ -499,6 +520,14 @@ final class ColorPaletteTest extends TestCase
         $this->assertNotSame($palette->get(0), $lightened->get(0));
     }
 
+    public function testMapKeepsListKeys(): void
+    {
+        $palette = ColorPalette::fromHex(['#ff0000', '#00ff00', '#0000ff']);
+        $mapped = $palette->map(static fn (ColorInterface $c): ColorInterface => $c->lighten(0.1));
+
+        $this->assertSame([0, 1, 2], array_keys($mapped->all()));
+    }
+
     public function testMapMaintainsKeys(): void
     {
         $palette = ColorPalette::fromHex(['red' => '#ff0000', 'green' => '#00ff00']);
@@ -528,6 +557,14 @@ final class ColorPaletteTest extends TestCase
         $merged = $filtered1->merge($palette2);
 
         $this->assertSame(1, $merged->count());
+    }
+
+    public function testMergeKeepsListKeys(): void
+    {
+        $palette1 = ColorPalette::fromHex(['#ff0000', '#00ff00']);
+        $palette2 = ColorPalette::fromHex(['#0000ff', '#ffff00']);
+
+        $this->assertSame([0, 1, 2, 3], array_keys($palette1->merge($palette2)->all()));
     }
 
     public function testMergeMixedNamedThrows(): void
@@ -606,6 +643,13 @@ final class ColorPaletteTest extends TestCase
 
         $this->assertSame('#0000ff', $reversed->get(0)->toHex());
         $this->assertSame('#ff0000', $reversed->get(2)->toHex());
+    }
+
+    public function testReverseKeepsListKeys(): void
+    {
+        $palette = ColorPalette::fromHex(['#ff0000', '#00ff00', '#0000ff']);
+
+        $this->assertSame([0, 1, 2], array_keys($palette->reverse()->all()));
     }
 
     public function testReverseNamedThrows(): void
@@ -729,7 +773,7 @@ final class ColorPaletteTest extends TestCase
         $sliced = $palette->slice(1, 2);
 
         $this->assertSame(2, $sliced->count());
-        $this->assertSame('#00ff00', $sliced->get(1)->toHex());
+        $this->assertSame('#00ff00', $sliced->get(0)->toHex());
     }
 
     public function testSliceNamedThrows(): void
@@ -738,6 +782,17 @@ final class ColorPaletteTest extends TestCase
 
         $this->expectException(InvalidColorException::class);
         $palette->slice(0, 1);
+    }
+
+    public function testSliceReindexesKeys(): void
+    {
+        $palette = ColorPalette::fromHex(['#ff0000', '#00ff00', '#0000ff', '#ffff00']);
+        $sliced = $palette->slice(1, 2);
+
+        $this->assertFalse($sliced->isNamed());
+        $this->assertSame([0, 1], array_keys($sliced->all()));
+        $this->assertSame('#00ff00', $sliced->get(0)->toHex());
+        $this->assertSame('#00ff00', $sliced->at(0.0)->toHex());
     }
 
     public function testSliceWithNegativeOffset(): void
@@ -755,8 +810,8 @@ final class ColorPaletteTest extends TestCase
 
         // Should take all colors from offset 2 to end
         $this->assertSame(2, $sliced->count());
-        $this->assertSame('#0000ff', $sliced->get(2)->toHex());
-        $this->assertSame('#ffff00', $sliced->get(3)->toHex());
+        $this->assertSame('#0000ff', $sliced->get(0)->toHex());
+        $this->assertSame('#ffff00', $sliced->get(1)->toHex());
     }
 
     public function testSliceZeroLength(): void
