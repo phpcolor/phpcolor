@@ -148,6 +148,13 @@ final class AbstractColorTest extends TestCase
         $this->assertSame('0.1', DummyColor::tFormatCssFloat(0.100000));
         $this->assertSame('1', DummyColor::tFormatCssFloat(1.000000));
 
+        $this->assertSame('259.815', DummyColor::tFormatCssFloat(259.814527));
+        $this->assertSame('0.623083', DummyColor::tFormatCssFloat(0.623083123));
+        $this->assertSame('0.00803521', DummyColor::tFormatCssFloat(0.008035214567));
+        $this->assertSame('0', DummyColor::tFormatCssFloat(2.236e-8));
+        $this->assertSame('0', DummyColor::tFormatCssFloat(0.0));
+        $this->assertSame('-259.815', DummyColor::tFormatCssFloat(-259.814527));
+
         $this->assertSame(90.0, DummyColor::tNormAngle(450.0));
         $this->assertSame(330.0, DummyColor::tNormAngle(-30.0));
 
