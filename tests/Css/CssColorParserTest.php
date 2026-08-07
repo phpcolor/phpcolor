@@ -22,6 +22,7 @@ use PhpColor\Color\Exception\ParseException;
 use PhpColor\Color\HwbColor;
 use PhpColor\Color\LabColor;
 use PhpColor\Color\LchColor;
+use PhpColor\Color\LinearSrgbColor;
 use PhpColor\Color\OklabColor;
 use PhpColor\Color\OklchColor;
 use PhpColor\Color\ProPhotoColor;
@@ -299,6 +300,21 @@ final class CssColorParserTest extends TestCase
     {
         $color = CssColorParser::parse('oklch(from rgb(255 0 0) l c h)');
         $this->assertInstanceOf(OklchColor::class, $color);
+    }
+
+    public function testParseRelativeSrgbLinearIdentity(): void
+    {
+        $source = Color::parse('#3b82f6');
+
+        $this->assertSame($source->to('srgb-linear')->toCss(), CssColorParser::parse('color(from #3b82f6 srgb-linear r g b)')->toCss());
+    }
+
+    public function testParseRelativeSrgbLinearChannelExpression(): void
+    {
+        $halved = CssColorParser::parse('color(from red srgb-linear calc(r / 2) g b)');
+
+        $this->assertInstanceOf(LinearSrgbColor::class, $halved);
+        $this->assertEqualsWithDelta(0.5, $halved->getChannels()['r'], 1e-9);
     }
 
     public function testParseRelativeXyzIdentity(): void
