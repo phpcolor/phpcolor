@@ -20,6 +20,7 @@ use PhpColor\Color\Exception\InvalidColorException;
 use PhpColor\Color\OklabColor;
 use PhpColor\Color\OklchColor;
 use PhpColor\Color\Parser\ColorParser;
+use PhpColor\Color\SrgbColor;
 
 /**
  * Concrete implementation of a color palette.
@@ -351,7 +352,8 @@ final readonly class ColorPalette implements ColorPaletteInterface
         }
         $css = '';
         foreach ($this->colors as $name => $color) {
-            $css .= \sprintf("  --%s-%s: %s;\n", $prefix, $name, $color->toHex(!$color->isOpaque()));
+            $value = $color instanceof SrgbColor ? $color->toHex(!$color->isOpaque()) : $color->toCss();
+            $css .= \sprintf("  --%s-%s: %s;\n", $prefix, $name, $value);
         }
 
         return $css;

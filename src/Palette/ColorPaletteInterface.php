@@ -193,6 +193,9 @@ interface ColorPaletteInterface extends \Countable, \IteratorAggregate
      * Only available for named palettes. Generates a string of CSS variable
      * declarations like '--prefix-name: color;'.
      *
+     * sRGB colors are written as hexadecimal, other spaces keep their own CSS
+     * notation so that no gamut or precision is lost.
+     *
      * @param string $prefix Prefix for CSS variable names (default: 'color')
      *
      * @throws InvalidColorException If the palette is not a named palette

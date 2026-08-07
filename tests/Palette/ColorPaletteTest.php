@@ -938,6 +938,27 @@ final class ColorPaletteTest extends TestCase
         $this->assertSame("  --color-primary: #ff0000;\n  --color-ghost: #0000ff40;\n", $palette->toCssVariables());
     }
 
+    public function testToCssVariablesKeepsNonSrgbNotation(): void
+    {
+        $palette = ColorPalette::named([
+            'wide' => Color::parse('color(display-p3 1 0 0)'),
+            'brand' => Color::parse('oklch(0.7 0.15 250)'),
+            'plain' => Color::parse('#3b82f6'),
+        ]);
+
+        $this->assertSame(
+            "  --color-wide: color(display-p3 1 0 0);\n  --color-brand: oklch(0.7 0.15 250);\n  --color-plain: #3b82f6;\n",
+            $palette->toCssVariables()
+        );
+    }
+
+    public function testToCssVariablesKeepsNonSrgbAlpha(): void
+    {
+        $palette = ColorPalette::named(['wide' => Color::parse('color(display-p3 1 0 0 / 0.5)')]);
+
+        $this->assertSame("  --color-wide: color(display-p3 1 0 0 / 0.5);\n", $palette->toCssVariables());
+    }
+
     public function testToCssVariablesWithCustomPrefix(): void
     {
         $palette = ColorPalette::fromHex([
