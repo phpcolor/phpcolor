@@ -370,6 +370,11 @@ abstract readonly class AbstractColor implements \Stringable, ColorInterface
         return $this->toSrgb()->toHex($withAlpha);
     }
 
+    public function toOklch(): OklchColor
+    {
+        return OklchColor::from($this);
+    }
+
     public function toString(): string
     {
         return $this->toCss();

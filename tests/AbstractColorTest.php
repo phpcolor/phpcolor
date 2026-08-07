@@ -241,6 +241,35 @@ final class AbstractColorTest extends TestCase
         $this->assertEqualsWithDelta(0.8, $changed->getAlpha(), 1e-12);
     }
 
+    public function testToOklchMatchesToWithSpaceName(): void
+    {
+        foreach (['#3b82f6', '#000000', '#ffffff', '#808080'] as $hex) {
+            $color = Color::parse($hex);
+            $this->assertSame($color->to('oklch')->toCss(), $color->toOklch()->toCss());
+        }
+    }
+
+    public function testToOklchExposesOklchAccessors(): void
+    {
+        $oklch = Color::parse('#3b82f6')->toOklch();
+
+        $this->assertInstanceOf(OklchColor::class, $oklch);
+        $this->assertEqualsWithDelta(0.623083, $oklch->getLightness(), 1e-6);
+        $this->assertEqualsWithDelta(0.188015, $oklch->getChroma(), 1e-6);
+    }
+
+    public function testToOklchPreservesAlpha(): void
+    {
+        $this->assertEqualsWithDelta(0.25, Color::parse('rgb(59 130 246 / 0.25)')->toOklch()->getAlpha(), 1e-12);
+    }
+
+    public function testToOklchOnOklchColorReturnsEquivalentColor(): void
+    {
+        $oklch = new OklchColor(0.6, 0.15, 210.0);
+
+        $this->assertSame($oklch->toCss(), $oklch->toOklch()->toCss());
+    }
+
     public function testWithChannelShortcut(): void
     {
         $c = new SrgbColor(0.1, 0.2, 0.3);
