@@ -53,6 +53,7 @@ final class ColorSpaces
             'oklab', 'lab' => ['l', 'a', 'b'],
             'oklch', 'lch' => ['l', 'c', 'h'],
             'cmyk' => ['c', 'm', 'y', 'k'],
+            'xyz-d65' => ['x', 'y', 'z'],
             default => ['r', 'g', 'b'],
         };
     }

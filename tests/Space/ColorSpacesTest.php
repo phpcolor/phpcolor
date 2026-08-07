@@ -60,7 +60,8 @@ final class ColorSpacesTest extends TestCase
         yield ['oklch', ['l', 'c', 'h']];
         yield ['srgb', ['r', 'g', 'b']];
         yield ['rgb', ['r', 'g', 'b']];
-        yield ['xyz-d65', ['r', 'g', 'b']];
+        yield ['xyz-d65', ['x', 'y', 'z']];
+        yield ['xyz', ['x', 'y', 'z']];
         yield ['lab', ['l', 'a', 'b']];
         yield ['lch', ['l', 'c', 'h']];
         yield ['rec2020', ['r', 'g', 'b']];
