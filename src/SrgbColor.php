@@ -238,7 +238,7 @@ final readonly class SrgbColor extends AbstractColor
         }
 
         if ('hsl' === $target) {
-            $hsl = $this->toHsl();
+            $hsl = $this->getHslChannels();
             $h = self::formatCssFloat($hsl['h']);
             $s = self::formatCssFloat($hsl['s'] * 100.0);
             $l = self::formatCssFloat($hsl['l'] * 100.0);
@@ -282,11 +282,14 @@ final readonly class SrgbColor extends AbstractColor
     }
 
     /**
-     * Convert the color to its HSL representation.
+     * Read the color as HSL channels.
+     *
+     * HSL is a cylindrical notation of sRGB, not a separate color space, so this
+     * returns channel values rather than a color object.
      *
      * @return array{h: float, s: float, l: float}
      */
-    public function toHsl(): array
+    public function getHslChannels(): array
     {
         $r = $this->r;
         $g = $this->g;
@@ -316,6 +319,18 @@ final readonly class SrgbColor extends AbstractColor
         }
 
         return ['h' => $h, 's' => $s, 'l' => $l];
+    }
+
+    /**
+     * Read the color as HSL channels.
+     *
+     * @return array{h: float, s: float, l: float}
+     *
+     * @deprecated since 1.1, use getHslChannels() instead
+     */
+    public function toHsl(): array
+    {
+        return $this->getHslChannels();
     }
 
     public function toSrgb(): self

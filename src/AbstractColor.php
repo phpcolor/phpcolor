@@ -356,6 +356,10 @@ abstract readonly class AbstractColor implements \Stringable, ColorInterface
             'cmyk' => CmykColor::class,
         ];
 
+        if ('hsl' === $target) {
+            throw new InvalidColorException('"hsl" is an sRGB notation, not a color space. Use toSrgb()->toCss(\'hsl\') to serialize it, or toSrgb()->getHslChannels() to read its channels.');
+        }
+
         if (!isset($spaceMap[$target])) {
             throw new InvalidColorException(\sprintf('Unknown or unsupported color space "%s".', $space));
         }
