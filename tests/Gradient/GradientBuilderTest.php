@@ -40,12 +40,24 @@ final class GradientBuilderTest extends TestCase
         $this->assertSame('linear-gradient(90deg in oklab, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $css);
     }
 
-    public function testBuiltGradientEmitsSrgbInterpolationSpaceAsLinear(): void
+    public function testBuiltGradientEmitsSrgbInterpolationSpace(): void
     {
         $css = GradientBuilder::linear(90.0)
             ->from('#ff0000')
             ->to('#0000ff')
             ->in('srgb')
+            ->build()
+            ->toCss();
+
+        $this->assertSame('linear-gradient(90deg in srgb, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $css);
+    }
+
+    public function testBuiltGradientEmitsSrgbLinearInterpolationSpace(): void
+    {
+        $css = GradientBuilder::linear(90.0)
+            ->from('#ff0000')
+            ->to('#0000ff')
+            ->in('srgb-linear')
             ->build()
             ->toCss();
 

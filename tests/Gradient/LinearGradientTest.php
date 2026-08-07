@@ -119,6 +119,33 @@ final class LinearGradientTest extends TestCase
         $this->assertInstanceOf(ColorInterface::class, $color05);
     }
 
+    #[DataProvider('interpolationSpaceProvider')]
+    public function testInterpolateAgreesWithMix(InterpolationSpace $space): void
+    {
+        $red = Color::parse('#ff0000');
+        $blue = Color::parse('#0000ff');
+
+        $gradient = new LinearGradient(90.0, [
+            new GradientStop($red, 0.0),
+            new GradientStop($blue, 1.0),
+        ], $space);
+
+        $this->assertSame(
+            Color::mix($red, $blue, 0.5, $space->value)->toSrgb()->toHex(),
+            $gradient->interpolate(0.5)->toSrgb()->toHex(),
+        );
+    }
+
+    /**
+     * @return iterable<string, array{InterpolationSpace}>
+     */
+    public static function interpolationSpaceProvider(): iterable
+    {
+        yield 'oklab' => [InterpolationSpace::Oklab];
+        yield 'srgb' => [InterpolationSpace::Srgb];
+        yield 'srgb-linear' => [InterpolationSpace::SrgbLinear];
+    }
+
     public function testInterpolateEmptyGradient(): void
     {
         $gradient = new LinearGradient();
@@ -149,6 +176,16 @@ final class LinearGradientTest extends TestCase
             new GradientStop(Color::parse('#ff0000'), 0.0),
             new GradientStop(Color::parse('#0000ff'), 1.0),
         ], InterpolationSpace::Srgb);
+
+        $this->assertSame('linear-gradient(90deg in srgb, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
+    }
+
+    public function testToCssWithSrgbLinearInterpolationSpace(): void
+    {
+        $gradient = new LinearGradient(90.0, [
+            new GradientStop(Color::parse('#ff0000'), 0.0),
+            new GradientStop(Color::parse('#0000ff'), 1.0),
+        ], InterpolationSpace::SrgbLinear);
 
         $this->assertSame('linear-gradient(90deg in srgb-linear, rgb(255 0 0) 0%, rgb(0 0 255) 100%)', $gradient->toCss());
     }

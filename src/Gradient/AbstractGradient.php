@@ -51,15 +51,15 @@ abstract readonly class AbstractGradient implements GradientInterface
     /**
      * Format the interpolation space for CSS output.
      *
-     * The clause is always emitted: the CSS default is sRGB, which matches
-     * neither of the spaces this library interpolates in. InterpolationSpace::Srgb
-     * mixes linearized channels, so it maps to the CSS srgb-linear space.
+     * The clause is always emitted: the CSS default is sRGB, which the library
+     * default (Oklab) does not match.
      */
     protected function formatInterpolationSpace(): string
     {
         return match ($this->interpolationSpace) {
             InterpolationSpace::Oklab => 'in oklab',
-            InterpolationSpace::Srgb => 'in srgb-linear',
+            InterpolationSpace::Srgb => 'in srgb',
+            InterpolationSpace::SrgbLinear => 'in srgb-linear',
         };
     }
 

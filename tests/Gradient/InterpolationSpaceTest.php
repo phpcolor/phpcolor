@@ -30,10 +30,15 @@ final class InterpolationSpaceTest extends TestCase
         $this->assertSame('srgb', InterpolationSpace::Srgb->value);
     }
 
-    public function testHasExactlyTwoCases(): void
+    public function testHasSrgbLinearCase(): void
+    {
+        $this->assertSame('srgb-linear', InterpolationSpace::SrgbLinear->value);
+    }
+
+    public function testHasExactlyThreeCases(): void
     {
         $cases = InterpolationSpace::cases();
-        $this->assertCount(2, $cases);
+        $this->assertCount(3, $cases);
     }
 
     public function testCasesAreBackedByStrings(): void
@@ -50,6 +55,7 @@ final class InterpolationSpaceTest extends TestCase
         $result = match ($space) {
             InterpolationSpace::Oklab => 'oklab-selected',
             InterpolationSpace::Srgb => 'srgb-selected',
+            InterpolationSpace::SrgbLinear => 'srgb-linear-selected',
         };
 
         $this->assertSame('oklab-selected', $result);
@@ -59,9 +65,11 @@ final class InterpolationSpaceTest extends TestCase
     {
         $oklab = InterpolationSpace::from('oklab');
         $srgb = InterpolationSpace::from('srgb');
+        $srgbLinear = InterpolationSpace::from('srgb-linear');
 
         $this->assertSame(InterpolationSpace::Oklab, $oklab);
         $this->assertSame(InterpolationSpace::Srgb, $srgb);
+        $this->assertSame(InterpolationSpace::SrgbLinear, $srgbLinear);
     }
 
     public function testFromMethodThrowsOnInvalidValue(): void
