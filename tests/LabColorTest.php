@@ -38,16 +38,16 @@ final class LabColorTest extends ColorTestCase
     {
         // color, hex, hexWithAlpha, css
         yield 'red' => [
-            new LabColor(53.24, 80.09, 67.2), // sRGB Red
+            new LabColor(54.29, 80.8, 69.89), // sRGB Red
             '#ff0000',
             '#ff0000ff',
-            'lab(53.24 80.09 67.2)',
+            'lab(54.29 80.8 69.89)',
         ];
         yield 'translucent blue' => [
-            new LabColor(32.3, 79.19, -107.86, 0.5), // sRGB Blue
+            new LabColor(29.57, 68.29, -112.03, 0.5), // sRGB Blue
             '#0000ff',
             '#0000ff80',
-            'lab(32.3 79.19 -107.86 / 0.5)',
+            'lab(29.57 68.29 -112.03 / 0.5)',
         ];
     }
 
@@ -148,6 +148,84 @@ final class LabColorTest extends ColorTestCase
 
         $lab2 = new LabColor(150.0, 0.0, 0.0);
         $this->assertSame(100.0, $lab2->l);
+    }
+
+    #[DataProvider('provideCssColor4ReferenceValues')]
+    public function testMatchesCssColor4ReferenceValues(string $hex, float $l, float $a, float $b): void
+    {
+        $lab = LabColor::fromSrgb(SrgbColor::parseHex($hex));
+
+        $this->assertEqualsWithDelta($l, $lab->l, 0.05);
+        $this->assertEqualsWithDelta($a, $lab->a, 0.05);
+        $this->assertEqualsWithDelta($b, $lab->b, 0.05);
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: float, 2: float, 3: float}>
+     */
+    public static function provideCssColor4ReferenceValues(): iterable
+    {
+        // lab() coordinates per CSS Color 4, which defines Lab against the D50 reference white.
+        yield 'red' => ['#ff0000', 54.290541, 80.804928, 69.890965];
+        yield 'green' => ['#00ff00', 87.818534, -79.271061, 80.994581];
+        yield 'blue' => ['#0000ff', 29.568302, 68.287365, -112.029710];
+        yield 'white' => ['#ffffff', 100.0, 0.0, 0.0];
+        yield 'black' => ['#000000', 0.0, 0.0, 0.0];
+        yield 'mid gray' => ['#808080', 53.585013, 0.0, 0.0];
+        yield 'steel blue' => ['#336699', 41.520824, -4.573090, -33.494195];
+        yield 'olive' => ['#7f7f00', 51.765383, -9.394607, 55.708293];
+    }
+
+    #[DataProvider('provideNeutrals')]
+    public function testNeutralsAreAchromatic(string $hex, float $l): void
+    {
+        $lab = LabColor::fromSrgb(SrgbColor::parseHex($hex));
+
+        $this->assertEqualsWithDelta($l, $lab->l, 0.001);
+        $this->assertEqualsWithDelta(0.0, $lab->a, 0.001);
+        $this->assertEqualsWithDelta(0.0, $lab->b, 0.001);
+    }
+
+    /**
+     * @return iterable<string, array{0: string, 1: float}>
+     */
+    public static function provideNeutrals(): iterable
+    {
+        yield 'white' => ['#ffffff', 100.0];
+        yield 'black' => ['#000000', 0.0];
+        yield 'mid gray' => ['#808080', 53.585013];
+        yield 'light gray' => ['#cccccc', 82.045782];
+        yield 'dark gray' => ['#333333', 21.246731];
+    }
+
+    #[DataProvider('provideRoundTripHexColors')]
+    public function testRoundTripFromSrgb(string $hex): void
+    {
+        $srgb = SrgbColor::parseHex($hex);
+        $back = LabColor::fromSrgb($srgb)->toSrgb();
+
+        $this->assertEqualsWithDelta($srgb->r, $back->r, 0.001);
+        $this->assertEqualsWithDelta($srgb->g, $back->g, 0.001);
+        $this->assertEqualsWithDelta($srgb->b, $back->b, 0.001);
+    }
+
+    /**
+     * @return iterable<string, array{0: string}>
+     */
+    public static function provideRoundTripHexColors(): iterable
+    {
+        yield 'red' => ['#ff0000'];
+        yield 'green' => ['#00ff00'];
+        yield 'blue' => ['#0000ff'];
+        yield 'cyan' => ['#00ffff'];
+        yield 'magenta' => ['#ff00ff'];
+        yield 'yellow' => ['#ffff00'];
+        yield 'white' => ['#ffffff'];
+        yield 'black' => ['#000000'];
+        yield 'mid gray' => ['#808080'];
+        yield 'steel blue' => ['#336699'];
+        yield 'olive' => ['#7f7f00'];
+        yield 'salmon' => ['#fa8072'];
     }
 
     #[DataProvider('provideParseCases')]

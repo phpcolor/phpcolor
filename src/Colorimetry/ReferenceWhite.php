@@ -27,6 +27,7 @@ final class ReferenceWhite
      * - Rec.2020: 'rec2020', 'rec-2020', 'bt2020', 'bt-2020'
      * - A98 RGB: 'a98-rgb', 'a98', 'adobe-rgb'
      * - ProPhoto RGB: 'prophoto-rgb', 'prophoto', 'romm-rgb'
+     * - CIELAB family: 'lab', 'lch'
      */
     public static function forSpace(string $space): WhitePoint
     {
@@ -45,6 +46,7 @@ final class ReferenceWhite
 
         $d50 = [
             'prophoto-rgb', 'prophoto', 'romm-rgb',
+            'lab', 'lch',
         ];
 
         if (\in_array($s, $d50, true)) {
