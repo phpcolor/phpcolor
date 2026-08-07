@@ -460,11 +460,18 @@ abstract readonly class AbstractColor implements \Stringable, ColorInterface
     }
 
     /**
-     * Format a float value for CSS output, removing unnecessary trailing zeros.
+     * Format a float value for CSS output with six significant digits,
+     * removing unnecessary trailing zeros. Values below 1e-6 are written as 0.
      */
     final protected static function formatCssFloat(float $value): string
     {
-        return rtrim(rtrim(\sprintf('%.6f', $value), '0'), '.');
+        if (1e-6 > abs($value)) {
+            return '0';
+        }
+
+        $decimals = max(0, 5 - (int) floor(log10(abs($value))));
+
+        return rtrim(rtrim(\sprintf('%.'.min($decimals, 12).'f', $value), '0'), '.');
     }
 
     /**
