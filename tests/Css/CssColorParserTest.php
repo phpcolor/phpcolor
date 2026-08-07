@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhpColor\Color\Tests\Css;
 
 use PhpColor\Color\A98RgbColor;
+use PhpColor\Color\Color;
 use PhpColor\Color\Css\CssColorParser;
 use PhpColor\Color\DisplayP3Color;
 use PhpColor\Color\Exception\InvalidColorException;
@@ -298,6 +299,23 @@ final class CssColorParserTest extends TestCase
     {
         $color = CssColorParser::parse('oklch(from rgb(255 0 0) l c h)');
         $this->assertInstanceOf(OklchColor::class, $color);
+    }
+
+    public function testParseRelativeXyzIdentity(): void
+    {
+        $source = Color::parse('#3b82f6');
+
+        $this->assertSame($source->to('xyz-d65')->toCss(), CssColorParser::parse('color(from #3b82f6 xyz x y z)')->toCss());
+        $this->assertSame($source->to('xyz-d65')->toCss(), CssColorParser::parse('color(from #3b82f6 xyz-d65 x y z)')->toCss());
+    }
+
+    public function testParseRelativeXyzChannelExpression(): void
+    {
+        $doubled = CssColorParser::parse('color(from red xyz calc(x * 2) y z)');
+        $source = Color::parse('red')->to('xyz-d65')->getChannels();
+
+        $this->assertEqualsWithDelta($source['x'] * 2, $doubled->getChannels()['x'], 1e-9);
+        $this->assertEqualsWithDelta($source['y'], $doubled->getChannels()['y'], 1e-9);
     }
 
     public function testParseRelativeMissingParensTriggersInnerNullBranch(): void
