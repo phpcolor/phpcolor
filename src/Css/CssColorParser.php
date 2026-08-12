@@ -21,6 +21,7 @@ use PhpColor\Color\Exception\ParseException;
 use PhpColor\Color\HwbColor;
 use PhpColor\Color\LabColor;
 use PhpColor\Color\LchColor;
+use PhpColor\Color\LinearSrgbColor;
 use PhpColor\Color\OklabColor;
 use PhpColor\Color\OklchColor;
 use PhpColor\Color\Parser\ParserUtils;
@@ -348,6 +349,7 @@ final class CssColorParser
             'oklch' => OklchColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'lab' => LabColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'lch' => LchColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
+            'srgb-linear' => LinearSrgbColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'display-p3' => DisplayP3Color::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'xyz', 'xyz-d65' => XyzColor::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
             'rec2020', 'rec-2020', 'bt2020', 'bt-2020' => Rec2020Color::fromChannels($outputChannels['channels'], $outputChannels['alpha']),
@@ -393,7 +395,7 @@ final class CssColorParser
     private static function splitColorFunctionRelative(string $rest): array
     {
         $colorSpaces = [
-            'srgb', 'hsl', 'oklab', 'oklch', 'lab', 'lch', 'display-p3', 'displayp3',
+            'srgb', 'srgb-linear', 'hsl', 'oklab', 'oklch', 'lab', 'lch', 'display-p3', 'displayp3',
             'xyz-d65', 'xyz', 'rec2020', 'rec-2020', 'bt2020', 'bt-2020',
             'prophoto-rgb', 'prophoto', 'romm-rgb', 'a98-rgb', 'a98', 'adobe-rgb',
         ];
