@@ -24,7 +24,9 @@ use PhpColor\Color\Palette\ColorPaletteInterface;
  * Fixes contrast issues in palettes for accessibility.
  *
  * Ensures colors meet WCAG contrast requirements against a background color
- * by adjusting lightness while preserving hue and chroma.
+ * by adjusting lightness. preserve_hue and preserve_chroma default to true
+ * (lightness only); set either to false to let that dimension relax when a
+ * fixed-lightness-only search cannot reach the target within max_iterations.
  */
 final class ContrastFixer implements PaletteFixerInterface
 {
@@ -140,13 +142,20 @@ final class ContrastFixer implements PaletteFixerInterface
     /**
      * Adjust a color to meet contrast requirements.
      *
+     * Always tries the original chroma and hue first. If that fails within
+     * $maxIterations and $preserveChroma is false, it retries fully
+     * desaturated. If that also fails (or was skipped) and $preserveHue is
+     * false, it sweeps hue offsets, nearest first, at the original chroma.
+     * The first passing candidate wins; otherwise the best-effort result
+     * closest to what was actually tried is returned.
+     *
      * @param ColorInterface $color          Color to adjust
      * @param ColorInterface $background     Background color
      * @param float          $minContrast    Target contrast ratio
      * @param string         $adjustMode     'lighten', 'darken', or 'auto'
      * @param bool           $preserveHue    Keep original hue
      * @param bool           $preserveChroma Keep original chroma
-     * @param int            $maxIterations  Maximum attempts
+     * @param int            $maxIterations  Maximum attempts per candidate
      */
     private function adjustColorContrast(
         ColorInterface $color,
@@ -171,22 +180,56 @@ final class ContrastFixer implements PaletteFixerInterface
             default => $bgLuminance < 0.5,
         };
 
+        [$best, $passed] = $this->searchLightness($oklch, $oklch->c, $oklch->h, $background, $minContrast, $shouldLighten, $maxIterations);
+        if ($passed) {
+            return $best;
+        }
+
+        if (!$preserveChroma) {
+            [$relaxed, $relaxedPassed] = $this->searchLightness($oklch, 0.0, $oklch->h, $background, $minContrast, $shouldLighten, $maxIterations);
+            if ($relaxedPassed) {
+                return $relaxed;
+            }
+            $best = $relaxed;
+        }
+
+        if (!$preserveHue) {
+            foreach (self::hueSearchOffsets() as $offset) {
+                [$candidate, $candidatePassed] = $this->searchLightness($oklch, $oklch->c, $oklch->h + $offset, $background, $minContrast, $shouldLighten, $maxIterations);
+                if ($candidatePassed) {
+                    return $candidate;
+                }
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * Step lightness from $source->l toward black or white at a fixed
+     * chroma and hue, returning the first candidate that reaches
+     * $minContrast, or the best-effort result if none does.
+     *
+     * @return array{0: OklchColor, 1: bool}
+     */
+    private function searchLightness(
+        OklchColor $source,
+        float $chroma,
+        float $hue,
+        ColorInterface $background,
+        float $minContrast,
+        bool $shouldLighten,
+        int $maxIterations,
+    ): array {
         $step = $shouldLighten ? 0.05 : -0.05;
-        $newL = $oklch->l;
+        $newL = $source->l;
         $iterations = 0;
 
         while ($iterations < $maxIterations) {
-            $testColor = new OklchColor(
-                $newL,
-                $preserveChroma ? $oklch->c : $oklch->c,
-                $preserveHue ? $oklch->h : $oklch->h,
-                $oklch->alpha
-            );
+            $testColor = new OklchColor($newL, $chroma, $hue, $source->alpha);
 
-            $contrast = Color::contrast($testColor, $background);
-
-            if ($contrast >= $minContrast) {
-                return $testColor;
+            if (Color::contrast($testColor, $background) >= $minContrast) {
+                return [$testColor, true];
             }
 
             $newL += $step;
@@ -200,12 +243,24 @@ final class ContrastFixer implements PaletteFixerInterface
             ++$iterations;
         }
 
-        return new OklchColor(
-            max(0.0, min(1.0, $newL)),
-            $preserveChroma ? $oklch->c : $oklch->c,
-            $preserveHue ? $oklch->h : $oklch->h,
-            $oklch->alpha
-        );
+        return [new OklchColor(max(0.0, min(1.0, $newL)), $chroma, $hue, $source->alpha), false];
+    }
+
+    /**
+     * Hue offsets in degrees, nearest to farthest, both directions.
+     *
+     * @return list<float>
+     */
+    private static function hueSearchOffsets(): array
+    {
+        $offsets = [];
+        for ($deg = 15.0; $deg < 180.0; $deg += 15.0) {
+            $offsets[] = $deg;
+            $offsets[] = -$deg;
+        }
+        $offsets[] = 180.0;
+
+        return $offsets;
     }
 
     /**
