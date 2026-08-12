@@ -248,6 +248,22 @@ final class AbstractColorTest extends TestCase
         $this->assertEqualsWithDelta(0.8, $changed->getAlpha(), 1e-12);
     }
 
+    public function testToHslExplainsItIsANotation(): void
+    {
+        $this->expectException(InvalidColorException::class);
+        $this->expectExceptionMessage('"hsl" is an sRGB notation, not a color space.');
+
+        Color::parse('#ff0000')->to('hsl');
+    }
+
+    public function testToHslSuggestsRoutesThatWorkFromAnySpace(): void
+    {
+        $color = Color::parse('oklch(0.7 0.15 250)');
+
+        $this->assertStringStartsWith('hsl(', $color->toSrgb()->toCss('hsl'));
+        $this->assertArrayHasKey('s', $color->toSrgb()->getHslChannels());
+    }
+
     public function testToOklchMatchesToWithSpaceName(): void
     {
         foreach (['#3b82f6', '#000000', '#ffffff', '#808080'] as $hex) {

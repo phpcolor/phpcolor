@@ -248,7 +248,7 @@ final class CssColorParser
 
         if ('hsl' === $targetSpace) {
             $srgb = $origin->toSrgb();
-            $hsl = $srgb->toHsl();
+            $hsl = $srgb->getHslChannels();
 
             return [
                 ['h' => $hsl['h'], 's' => $hsl['s'], 'l' => $hsl['l']],

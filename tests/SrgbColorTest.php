@@ -236,7 +236,7 @@ final class SrgbColorTest extends ColorTestCase
 
         $this->assertInstanceOf(SrgbColor::class, $srgb);
 
-        $hsl = $srgb->toHsl();
+        $hsl = $srgb->getHslChannels();
         $this->assertIsArray($hsl);
         $this->assertArrayHasKey('h', $hsl);
         $this->assertArrayHasKey('s', $hsl);
@@ -383,11 +383,18 @@ final class SrgbColorTest extends ColorTestCase
         $srgb->toCss('unsupported-space');
     }
 
+    public function testToHslIsAnAliasOfGetHslChannels(): void
+    {
+        $color = new SrgbColor(0.2, 0.6, 0.9);
+
+        $this->assertSame($color->getHslChannels(), $color->toHsl());
+    }
+
     public function testToHslGrayscale(): void
     {
         // When R=G=B, should return zero saturation
         $gray = new SrgbColor(0.5, 0.5, 0.5);
-        $hsl = $gray->toHsl();
+        $hsl = $gray->getHslChannels();
         $this->assertSame(0.0, $hsl['h']);
         $this->assertSame(0.0, $hsl['s']);
         $this->assertSame(0.5, $hsl['l']);
@@ -397,7 +404,7 @@ final class SrgbColorTest extends ColorTestCase
     {
         // Test saturation calculation when lightness > 0.5
         $color = new SrgbColor(0.9, 0.7, 0.8);
-        $hsl = $color->toHsl();
+        $hsl = $color->getHslChannels();
         $this->assertGreaterThan(0.0, $hsl['s']);
         $this->assertGreaterThan(0.5, $hsl['l']);
     }
@@ -406,7 +413,7 @@ final class SrgbColorTest extends ColorTestCase
     {
         // Test case where hue calculation might be negative
         $color = new SrgbColor(0.9, 0.2, 0.8);
-        $hsl = $color->toHsl();
+        $hsl = $color->getHslChannels();
         $this->assertGreaterThanOrEqual(0.0, $hsl['h']);
         $this->assertLessThan(360.0, $hsl['h']);
     }
@@ -415,7 +422,7 @@ final class SrgbColorTest extends ColorTestCase
     {
         // Test when blue is the maximum component
         $color = new SrgbColor(0.2, 0.3, 0.9);
-        $hsl = $color->toHsl();
+        $hsl = $color->getHslChannels();
         $this->assertIsFloat($hsl['h']);
         $this->assertIsFloat($hsl['s']);
         $this->assertIsFloat($hsl['l']);
@@ -427,7 +434,7 @@ final class SrgbColorTest extends ColorTestCase
     {
         // Test when green is the maximum component
         $color = new SrgbColor(0.2, 0.8, 0.3);
-        $hsl = $color->toHsl();
+        $hsl = $color->getHslChannels();
         $this->assertIsFloat($hsl['h']);
         $this->assertIsFloat($hsl['s']);
         $this->assertIsFloat($hsl['l']);
