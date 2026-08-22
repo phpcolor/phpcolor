@@ -1,18 +1,20 @@
+<h1 align="center">
+  <a href="https://phpcolor.dev">
+    <img src="https://cdn.jsdelivr.net/gh/phpcolor/.github@main/assets/phpcolor-banner-1200.png" alt="PHP COLOR - Modern Color Library" width="1200" height="630">
+  </a>
+</h1>
+
 <div align="center">
-<img src="colors.svg" alt="Colors" width="90%">
-<h1><img src="https://phpcolor.dev/phpcolor.svg" alt="PHPColor logo" height="50"></h1>
 
 A PHP library for color: 15 color spaces, perceptual mixing, WCAG contrast,<br>
 palette generation, CSS Level 4/5 support, and vision simulation.
 
-&nbsp; ![PHP Version](https://img.shields.io/badge/PHP-8.3+-fbe8cb?labelColor=bf3636&color=fbe8cb)
-&nbsp; ![CI](https://img.shields.io/github/actions/workflow/status/phpcolor/phpcolor/CI.yaml?branch=main&label=Tests&labelColor=f59e0b&color=fef3c7)
-&nbsp; ![Coverage](https://img.shields.io/badge/PHPUnit-100%25-4fc08d?labelColor=10b981&color=d1fae5)
-&nbsp; ![PHPStan](https://img.shields.io/badge/PHPStan-lvl%2010-31c2f2?labelColor=06b6d4&color=cffafe)
-&nbsp; ![Release](https://img.shields.io/github/v/release/phpcolor/phpcolor?label=Stable&labelColor=3b82f6&color=dbeafe)
-&nbsp; ![License](https://img.shields.io/github/license/phpcolor/phpcolor?label=License&labelColor=6f49c5&color=ede9fe)
-
-<img src="colors.svg" alt="Colors" width="90%">
+&nbsp; ![PHP Version](https://img.shields.io/badge/PHP-8.3%2B-e3cffc?labelColor=050609)
+&nbsp; ![CI](https://img.shields.io/github/actions/workflow/status/phpcolor/phpcolor/CI.yaml?branch=main&label=Tests&labelColor=050609&color=ff63de)
+&nbsp; ![Coverage](https://img.shields.io/badge/PHPUnit-100%25-facc1d?labelColor=050609)
+&nbsp; ![PHPStan](https://img.shields.io/badge/PHPStan-level%2010-6ae01d?labelColor=050609)
+&nbsp; ![Release](https://img.shields.io/github/v/release/phpcolor/phpcolor?label=Stable&labelColor=050609&color=0ee8a3)
+&nbsp; ![License](https://img.shields.io/github/license/phpcolor/phpcolor?label=License&labelColor=050609&color=0eecf3)
 </div>
 
 ## Color Library
