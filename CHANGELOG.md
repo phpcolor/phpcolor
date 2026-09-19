@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [1.2.0](https://github.com/phpcolor/phpcolor/releases/tag/v1.2.0) - 2026-09-19
+
+### Added
+
+* Added `Gamut::clip()` for explicit sRGB clipping
+* Added `Gamut::map()` for perceptual OkLCh gamut mapping
+* Preserved alpha during clipping and gamut mapping
+
 ## [1.1.0](https://github.com/phpcolor/phpcolor/releases/tag/v1.1.0) - 2026-08-12
 
 ### Added
