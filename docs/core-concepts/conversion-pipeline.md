@@ -39,7 +39,23 @@ Spaces that use Hue, Saturation, Lightness/Value/Chroma are often cylindrical tr
 
 PHTColor uses high-precision matrices and oversampling checks ensure that values remain accurate even after multiple conversions.
 
-+**Gamut Mapping:** When converting from a wide-gamut space (like Rec. 2020) to a narrower one (sRGB), PHPColor applies gamut mapping to find the closest perceptual match within the target gamut.
+**Gamut mapping:** Conversion does not implicitly map colors. Use
+`Gamut::clip()` for component clipping or `Gamut::map()` for perceptual OkLCh
+chroma reduction when producing bounded sRGB output. Other target gamuts are not
+yet supported by these operations.
+
+```php
+use PhpColor\Color\Color;
+use PhpColor\Color\Colorimetry\Gamut;
+
+$interpolated = Color::mix($start, $end, 0.5, 'oklab');
+$mapped = Gamut::map($interpolated, 'srgb');
+$clipped = Gamut::clip($interpolated, 'srgb');
+```
+
+Apply clipping or mapping after interpolation, when producing output for a
+bounded target. Normal color conversion does not select a gamut-mapping
+strategy.
 
 ## Extending with Custom Spaces
 
